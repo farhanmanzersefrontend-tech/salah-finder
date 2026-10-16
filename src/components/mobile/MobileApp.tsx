@@ -41,6 +41,7 @@ import type { Journal } from "./useJournal";
 import MobileQuran from "./MobileQuran";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
+import ProfileOther from "./ProfileOther";
 import CitySearch, { cityLabel } from "./CitySearch";
 import type { CitySuggestion } from "./CitySearch";
 import "./mobile.css";
@@ -761,6 +762,7 @@ export default function MobileApp() {
                 </button>
               ))}
             </div>
+            <ProfileOther />
             <p className="profile-footer">
               Awqat Al-Salah · Made for your everyday faith
               <br />

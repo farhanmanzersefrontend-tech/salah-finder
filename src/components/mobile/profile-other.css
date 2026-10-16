@@ -1,0 +1,27 @@
+.profile-other { margin-top: 28px; }
+.profile-other-list { display: grid; gap: 13px; }
+.profile-other-card { min-height: 85px; }
+.profile-other-card .settings-card-copy small { max-width: 100%; white-space: normal; }
+.profile-soon-label { display: inline-block; margin-top: 7px; color: var(--deep); font-size: 9px; line-height: 1.4; }
+.profile-instagram-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; margin-top: 22px; padding: 25px 20px; border-radius: 25px; text-align: center; }
+.profile-instagram-card > svg { color: var(--teal); }
+.profile-instagram-card > strong { color: var(--deep); font-size: 16px; font-weight: 500; }
+.profile-instagram-card > span:not(.profile-soon-label) { color: var(--muted); font-size: 11px; line-height: 1.8; }
+.profile-instagram-card .profile-soon-label { margin-top: 0; }
+.profile-instagram-card::before { right: -40px; bottom: -24px; width: 150px; height: 150px; border-radius: 40px; }
+.profile-instagram-card::after { right: auto; left: -65px; bottom: 20px; width: 140px; height: 140px; border-radius: 40px; }
+.profile-coming-soon { text-align: center; padding: 8px 5px; }
+.profile-coming-soon > .settings-card-icon { width: 60px; height: 60px; margin: 0 auto 18px; }
+.profile-coming-soon h3 { font-size: 21px; font-weight: 500; color: var(--deep); }
+.profile-coming-soon p { font-size: 12px; color: var(--muted); line-height: 1.8; margin: 10px 0 24px; }
+.profile-share-panel > .settings-card-icon { margin: 0 auto; width: 56px; height: 56px; }
+.profile-share-panel > .settings-hint { text-align: center; }
+.profile-share-status { min-height: 20px; margin-top: 13px !important; font-size: 11px; line-height: 1.7; color: var(--deep); text-align: center; }
+@media (min-width: 768px) {
+  .profile-other { margin-top: 32px; }
+  .profile-other-card { min-height: 98px; }
+  .profile-soon-label { font-size: 10px; }
+  .profile-instagram-card { padding: 30px 24px; }
+  .profile-instagram-card > strong { font-size: 18px; }
+  .profile-instagram-card > span:not(.profile-soon-label) { font-size: 12px; }
+}
