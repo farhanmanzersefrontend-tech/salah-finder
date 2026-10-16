@@ -158,7 +158,7 @@ try {
   assert.equal('quietActive' in persisted, false, 'Transient quiet status is not persisted');
 
   let locationOptions;
-  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { geolocation: { getCurrentPosition(resolve, reject, options) { locationOptions = options; resolve({ coords: { latitude: 25, longitude: 55 } }); } } } });
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { geolocation: { getCurrentPosition(resolve, reject, options) { locationOptions = options; resolve({ coords: { latitude: 25, longitude: 55, accuracy: 20 } }); } } } });
   let locationLookups = 0;
   globalThis.fetch = async () => { locationLookups++; return { ok: true, json: async () => ({ address: { city: 'Dubai', country: 'United Arab Emirates' } }) }; };
   assert.equal((await currentPrayerLocation({ method: 'gps', useInternet: false })).label, 'Current location');

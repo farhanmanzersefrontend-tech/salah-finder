@@ -122,10 +122,13 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
   const setShowLocation = (open: boolean) => open ? navigateLocation(true) : backLocation(false);
   const [busy, setBusy] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [locationAccuracy, setLocationAccuracy] = useState<number | null>(null);
+  const [locationPhase, setLocationPhase] = useState('');
   const [monthOffset, setMonthOffset] = useState(0);
   const [period, setPeriod] = useState("week");
   const store = usePrayerStore();
   const locationDialog = useRef<HTMLDialogElement>(null);
+  const locationRequest = useRef<AbortController | null>(null);
   const locationTrigger = useRef<HTMLElement | null>(null);
   const timesRequest = useRef<AbortController | null>(null);
   const today = dayKey(now);
@@ -155,19 +158,20 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
       locationTrigger.current = document.activeElement as HTMLElement;
       locationDialog.current?.showModal();
     } else {
+      locationRequest.current?.abort();
       locationDialog.current?.close();
       locationTrigger.current?.focus();
     }
   }, [showLocation]);
 
-  async function loadTimes(lat: number, lon: number, label: string, calculation = usePrayerStore.getState().calculation) {
+  async function loadTimes(lat: number, lon: number, label: string, calculation = usePrayerStore.getState().calculation, requestSignal?: AbortSignal) {
     validateCalculation(calculation);
     timesRequest.current?.abort();
     const controller = new AbortController();
     timesRequest.current = controller;
     const response = await fetch(
       `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=${calculation.method}&school=${calculation.school}&latitudeAdjustmentMethod=${calculation.highLatitude}`,
-      { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) },
+      { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000), ...(requestSignal ? [requestSignal] : [])]) },
     );
     if (!response.ok)
       throw new Error("Prayer times are unavailable. Please try again.");
@@ -178,10 +182,12 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     if (!PRAYER_ORDER.every((p) => Number.isFinite(timeMinutes(raw[p] || ""))))
       throw new Error("Unable to load prayer times. Please try again.");
     if (controller.signal.aborted) throw new Error("A newer location request is in progress.");
+    requestSignal?.throwIfAborted();
     const timezone = data.data?.meta?.timezone || "";
     const date = prayerWallDate(new Date(), timezone);
     const timings = adjustPrayerTimes(raw, calculation, Number(data.data?.date?.hijri?.month?.number) === 9, date.getDay() === 5);
     usePrayerStore.setState({ timings, coords: { lat, lon }, location: label, calculation, timezone });
+    setLocationAccuracy(null);
     localStorage.setItem("salah-times-date", dayKey(date));
   }
 
@@ -240,15 +246,23 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     }
   }
   async function detectLocation() {
+    locationRequest.current?.abort();
+    const controller = new AbortController();
+    locationRequest.current = controller;
     setBusy(true);
     setLocationError("");
     try {
-      const { lat, lon, label } = await currentPrayerLocation(store.locationPreferences);
-      await loadTimes(lat, lon, label);
+      setLocationPhase('Finding your precise location…');
+      const { lat, lon, label, accuracy } = await currentPrayerLocation({ ...store.locationPreferences, method: 'gps' }, controller.signal);
+      setLocationPhase('Loading prayer times…');
+      await loadTimes(lat, lon, label, undefined, controller.signal);
+      if (controller.signal.aborted) return;
+      setLocationAccuracy(accuracy);
       setShowLocation(false);
     } catch (error) {
+      if (controller.signal.aborted) return;
       setLocationError(error instanceof Error ? error.message : "Could not load prayer times. Please try again.");
-    } finally { setBusy(false); }
+    } finally { if (locationRequest.current === controller) { setBusy(false); setLocationPhase(''); } }
   }
   const header = (title: string, back: Screen = "home") => (
     <header className="mobile-header">
@@ -405,6 +419,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                   {done.length}/5 <Check size={12} />
                 </span>
               </div>
+              {locationAccuracy !== null && <p className="location-accuracy" role="status">Current location accuracy: about {Math.round(locationAccuracy)} metres.</p>}
               {locationError && (
                 <p className="inline-error" role="status">
                   {locationError}
@@ -957,8 +972,9 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
           disabled={busy}
         >
           <NavigationArrow size={18} />
-          {busy ? "Finding your prayer times…" : "Use my current location"}
+          {busy ? locationPhase || "Finding your prayer times…" : "Use my current location"}
         </button>
+        <p className="location-accuracy">Allow location access and turn on Precise Location/GPS on your phone.</p>
         <div className="or-divider">or search a city</div>
         {showLocation && <CitySearch busy={busy} onSelect={selectCity} />}
         {locationError && (
