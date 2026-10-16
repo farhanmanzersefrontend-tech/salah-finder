@@ -1,0 +1,59 @@
+.prayer-guide-page { --guide-surface: #fffffff0; --guide-soft: #ffffff65; }
+.prayer-guide-header { gap: 10px; }
+.prayer-guide-header h1 { flex: 1; min-width: 0; text-align: center; line-height: 1.4; }
+.prayer-guide-header h1:focus { outline: none; }
+.prayer-guide-header .guide-saved-toggle { color: var(--deep); }
+.guide-saved-toggle[aria-pressed="true"] { background: var(--mint); }
+.prayer-guide-surface { padding: 18px 14px 24px; border: 1px solid #ffffff80; border-radius: 30px; background: var(--guide-soft); }
+.prayer-guide-page .prayer-guide-eyebrow { margin: 0 0 16px; font-size: 10px; letter-spacing: .5px; color: var(--deep); text-align: center; }
+.prayer-guide-topics { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; }
+.prayer-guide-page .prayer-guide-topics button { display: flex; align-items: center; gap: 7px; width: 100%; min-height: 52px; border: 1px solid transparent; padding: 14px 13px; border-radius: 13px; background: var(--guide-surface); text-align: left; color: var(--deep); font-size: 12px; line-height: 1.6; box-shadow: 0 3px 12px #355d5704; }
+.prayer-guide-page .prayer-guide-topics button:hover { border-color: var(--teal); }
+.guide-topic-number { align-self: baseline; font-variant-numeric: tabular-nums; }
+.prayer-guide-topics button > svg { flex-shrink: 0; margin-left: auto; color: var(--teal); }
+.prayer-guide-page .prayer-guide-note { margin: 20px 4px 0; text-align: center; color: var(--muted); font-size: 10px; line-height: 1.8; }
+.prayer-guide-readings { display: grid; gap: 30px; padding-top: 15px; }
+.prayer-guide-reading { position: relative; isolation: isolate; padding: 36px 22px 23px; border: 1px solid #ffffffb3; border-radius: 24px; background: var(--guide-surface); text-align: center; }
+.prayer-guide-pattern { position: absolute; bottom: 0; right: 0; width: 108px; height: 108px; color: var(--teal); opacity: .1; pointer-events: none; z-index: -1; }
+.guide-card-bookmark { position: absolute; top: -19px; left: calc(50% - 22px); display: grid; place-items: center; width: 44px; height: 44px; border: 3px solid var(--mint); border-radius: 50%; background: var(--guide-surface); color: var(--deep) !important; }
+.guide-card-bookmark[aria-pressed="true"] { background: var(--mint); }
+.prayer-guide-reading h2 { color: var(--deep); font-size: 15px; font-weight: 500; line-height: 1.6; }
+.prayer-guide-reading .guide-reading-arabic { margin: 18px 0 12px; font-family: 'Noto Naskh Arabic',serif; font-size: 26px; line-height: 1.9; color: var(--ink); }
+.prayer-guide-reading .guide-reading-transliteration { font-size: 12px; line-height: 1.8; color: var(--deep); }
+.prayer-guide-reading .guide-reading-meaning { margin: 22px 0 0; font-size: 12px; line-height: 1.9; color: var(--ink); }
+.prayer-guide-reading .guide-reading-copy { margin-top: 16px; font-size: 12px; line-height: 1.9; color: var(--muted); }
+.guide-excerpt-label { display: block; margin-top: 8px; font-size: 9px; color: var(--muted); }
+.guide-reading-sources { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; padding-top: 15px; margin-top: 22px; border-top: 1px solid var(--line); }
+.guide-reading-sources a { display: inline-flex; align-items: center; gap: 4px; color: var(--deep); font-size: 9px; text-decoration: underline; text-underline-offset: 3px; }
+.guide-rakah-table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 12px; text-align: left; }
+.guide-rakah-table caption { margin-bottom: 10px; color: var(--muted); font-size: 10px; }
+.guide-rakah-table th,.guide-rakah-table td { padding: 10px; border-bottom: 1px solid var(--line); }
+.guide-rakah-table th { font-weight: 500; }
+.guide-rakah-table thead { background: var(--mint); color: var(--deep); }
+.guide-rakah-table td,.guide-rakah-table th:last-child { text-align: center; }
+.prayer-guide-footer { position: sticky; bottom: calc(90px + env(safe-area-inset-bottom)); z-index: 5; display: flex; align-items: center; gap: 10px; margin-top: 20px; padding: 10px 14px; border: 1px solid #ffffff40; border-radius: 24px; background: linear-gradient(115deg,var(--deep),color-mix(in srgb,var(--deep) 75%,var(--teal))); box-shadow: 0 8px 24px #203c2e20; }
+.prayer-guide-page .prayer-guide-footer button { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; border: 0; background: transparent; color: #fff; }
+.prayer-guide-page .prayer-guide-footer .guide-previous { flex-shrink: 0; width: 44px; border-radius: 50%; background: #ffffff20; }
+.prayer-guide-page .prayer-guide-footer .guide-next { flex: 1; justify-content: space-between; text-align: right; font-size: 12px; }
+.guide-next > span { flex: 1; }
+.guide-next > svg { flex-shrink: 0; }
+.guide-next small { display: block; margin-bottom: 3px; font-size: 9px; opacity: .8; }
+.prayer-guide-footer .guide-start { width: 100%; font-size: 14px; font-weight: 500; }
+.guide-empty { text-align: center; padding: 25px 10px; color: var(--deep); }
+.guide-empty > svg { margin: 0 auto 18px; }
+.guide-empty h2 { font-size: 17px; font-weight: 500; }
+.guide-empty p { font-size: 12px; line-height: 1.8; }
+.guide-empty .outline-button { margin-top: 20px; }
+.night-mode .prayer-guide-page { --guide-surface: var(--night-surface); --guide-soft: #ffffff08; }
+.night-mode .prayer-guide-surface,.night-mode .prayer-guide-reading { border-color: var(--line); }
+.night-mode .prayer-guide-footer { background: linear-gradient(115deg,var(--night-raised),var(--night-surface)); border-color: var(--teal); }
+.night-mode .prayer-guide-footer button { color: var(--ink); }
+@media(min-width:768px) {
+  .prayer-guide-page { max-width: 780px; }
+  .prayer-guide-surface { padding: 24px; }
+  .prayer-guide-page .prayer-guide-topics button { min-height: 58px; font-size: 14px; }
+  .prayer-guide-reading { padding: 40px 32px 28px; }
+  .prayer-guide-reading .guide-reading-arabic { font-size: 32px; }
+  .prayer-guide-reading .guide-reading-copy,.prayer-guide-reading .guide-reading-meaning { font-size: 14px; }
+  .prayer-guide-footer { bottom: 116px; }
+}

@@ -46,6 +46,7 @@ import ProfileOther from "./ProfileOther";
 import ProfileGuides, { GuideComingSoon } from "./ProfileGuides";
 import type { GuideScreen } from "./ProfileGuides";
 import IslamicCalendar from "./IslamicCalendar";
+import PrayerGuide from "./PrayerGuide";
 import CitySearch, { cityLabel } from "./CitySearch";
 import type { CitySuggestion } from "./CitySearch";
 import "./mobile.css";
@@ -788,9 +789,10 @@ export default function MobileApp() {
             </p>
           </div>
         )}
-        {(screen === "prayer-guide" || screen === "wudu-guide") && (
+        {screen === "prayer-guide" && <PrayerGuide onBack={() => go("profile")} />}
+        {screen === "wudu-guide" && (
           <div className="mobile-page">
-            {header(screen === "prayer-guide" ? "Prayer Guide" : "Wudu Guide", "profile")}
+            {header("Wudu Guide", "profile")}
             <GuideComingSoon kind={screen} />
           </div>
         )}

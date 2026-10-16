@@ -16,7 +16,7 @@ export default function ProfileGuides({ onOpen }: { onOpen: (page: GuideScreen) 
       {items.map(({ page, title, description, icon: Icon }) => <button key={page} onClick={() => onOpen(page)}>
         <span className="setting-icon"><Icon size={22} /></span>
         <span><strong>{title}</strong><small>{description}</small>
-          {page !== 'islamic-calendar' && <span className="guide-soon-badge">Coming soon</span>}
+          {page === 'wudu-guide' && <span className="guide-soon-badge">Coming soon</span>}
         </span>
         <CaretRight size={16} />
       </button>)}
