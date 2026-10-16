@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { CaretRight, ArrowLeft } from 'phosphor-react';
 import type { SurahMeta } from '../../hooks/useQuranData';
+import { useNavigationState } from '../../hooks/useNavigationState';
 
 export default function MobileJuz({ onRead }: { onRead: (surah: SurahMeta, ayah: number) => void }) {
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, navigateSelected, backSelected] = useNavigationState<number | null>('quranJuz', null);
+  const setSelected = (value: number | null) => value === null ? backSelected(null) : navigateSelected(value);
   const [entries, setEntries] = useState<{ surah: SurahMeta; first: number; last: number }[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');

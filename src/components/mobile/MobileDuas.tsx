@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, CaretRight, CloudSun, Heart, House, MagnifyingGlass, Moon, HandsClapping, Sun, BookOpen, X } from 'phosphor-react';
 import { useSaved } from './useJournal';
 import MobileDhikr from './MobileDhikr';
+import { useNavigationState } from '../../hooks/useNavigationState';
 
 const duas = [
   { title: 'Family & loved ones', subtitle: 'A prayer for your home', icon: House, color: 'mint', arabic: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا', translation: 'Our Lord, grant us from among our spouses and offspring comfort to our eyes and make us an example for the righteous.', source: 'Quran 25:74' },
@@ -14,10 +15,11 @@ const duas = [
 ];
 
 export default function MobileDuas() {
-  const [tab, setTab] = useState('Daily');
+  const [tab, setTab] = useNavigationState('duaTab', 'Daily');
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, navigateSelected, backSelected] = useNavigationState<number | null>('duaDetail', null);
+  const setSelected = (value: number | null) => value === null && selected !== null ? backSelected(null) : navigateSelected(value);
   const [favorites, setFavorites] = useSaved<number[]>('salah-favorite-duas', []);
   const current = selected === null ? null : duas[selected];
   return <div className="mobile-page duas-page"><div className="page-title">{current ? <button className="icon-button" onClick={() => setSelected(null)} aria-label="Back to duas"><ArrowLeft size={21}/></button> : null}<h1>{current ? 'Daily dua' : 'Dua'}</h1><button className="icon-button" aria-label={searching ? 'Close search' : 'Search duas'} onClick={() => { setSearching(!searching); setQuery(''); setSelected(null); }}>{searching ? <X size={21}/> : <MagnifyingGlass size={21}/>}</button></div>

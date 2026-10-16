@@ -56,6 +56,7 @@ import "./mobile.css";
 import "./desktop.css";
 import "./night.css";
 import useVisitorCount from "../../hooks/useVisitorCount";
+import { useNavigationState } from "../../hooks/useNavigationState";
 
 type Screen =
   | GuideScreen
@@ -99,14 +100,15 @@ function ClockFace({ now }: { now: Date }) {
 }
 
 export default function MobileApp() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen, backScreen] = useNavigationState<Screen>("screen", "home", true);
   const [now, setNow] = useState(new Date());
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
   const [night, setNight] = useSaved("salah-night-mode", false);
   const [hijriOffset, setHijriOffset] = useSaved("salah-hijri-offset", 0);
   const visitors = useVisitorCount();
-  const [showLocation, setShowLocation] = useState(false);
+  const [showLocation, navigateLocation, backLocation] = useNavigationState("locationDialog", false);
+  const setShowLocation = (open: boolean) => open ? navigateLocation(true) : backLocation(false);
   const [busy, setBusy] = useState(false);
   const [locationError, setLocationError] = useState("");
   const [monthOffset, setMonthOffset] = useState(0);
@@ -132,6 +134,7 @@ export default function MobileApp() {
     setScreen(target);
     window.scrollTo({ top: 0 });
   };
+  const goBack = (fallback: Screen = "home") => backScreen(fallback);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
@@ -239,7 +242,7 @@ export default function MobileApp() {
     <header className="mobile-header">
       <button
         className="icon-button back-button"
-        onClick={() => go(back)}
+        onClick={() => goBack(back)}
         aria-label="Go back"
       >
         <ArrowLeft size={19} />
@@ -646,7 +649,7 @@ export default function MobileApp() {
           key={screen}
           initialManual={screen === "manual-times"}
           onReset={resetSettings}
-          onBack={() => go("home")}
+          onBack={() => goBack()}
           onLocation={loadTimes}
           onCalculation={saveCalculation}
           hijriOffset={hijriOffset}
@@ -794,7 +797,7 @@ export default function MobileApp() {
             </p>
           </div>
         )}
-        {screen === "prayer-guide" && <PrayerGuide onBack={() => go("profile")} />}
+        {screen === "prayer-guide" && <PrayerGuide onBack={() => goBack("profile")} />}
         {screen === "wudu-guide" && (
           <div className="mobile-page">
             {header("Wudu Guide", "profile")}

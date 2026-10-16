@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowCounterClockwise, CaretDown, Check, MagnifyingGlass, X } from 'phosphor-react';
 import { useSaved } from './useJournal';
 import './dhikr.css';
+import { useNavigationState } from '../../hooks/useNavigationState';
 
 const dhikr = [
   { countIndex: 3, arabic: 'لَا إِلَٰهَ إِلَّا اللَّهُ', name: 'La ilaha illallah', meaning: 'There is no god but Allah' },
@@ -17,7 +18,8 @@ export default function MobileDhikr() {
   const [counts, setCounts] = useSaved<number[]>('salah-dhikr-counts', [0, 0, 0, 0, 0]);
   const [dhikrIndex, setDhikrIndex] = useState(0);
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
+  const [open, navigateOpen, backOpen] = useNavigationState('dhikrList', false);
+  const setOpen = (value: boolean) => value ? navigateOpen(true) : backOpen(false);
   const sheet = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const current = dhikr[dhikrIndex];

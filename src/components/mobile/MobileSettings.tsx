@@ -11,6 +11,7 @@ import { unlockAudio } from "../../utils/playAzan";
 import CitySearch, { cityLabel } from "./CitySearch";
 import { MinuteField, SettingRow, SettingToggle, SettingsSheet } from "./SettingsControls";
 import "./settings.css";
+import { useNavigationState } from "../../hooks/useNavigationState";
 
 const sections = [
   { id: "prayer", title: "Prayer Times Settings", description: "Settings for calculating prayer times", icon: Clock },
@@ -41,8 +42,13 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
   hijriDate: string;
 }) {
   const store = usePrayerStore();
-  const [page, setPage] = useState<"prayer" | "hijri" | null>(initialManual ? "prayer" : null);
-  const [trail, setTrail] = useState<Sheet[]>(initialManual ? ["manual"] : []);
+  const [route, navigate, backRoute] = useNavigationState<{ page: "prayer" | "hijri" | null; trail: Sheet[] }>("settings", {
+    page: initialManual ? "prayer" : null,
+    trail: initialManual ? ["manual"] : [],
+  });
+  const { page, trail } = route;
+  const setPage = (page: "prayer" | "hijri" | null) => navigate(previous => ({ ...previous, page }));
+  const setTrail = (trail: Sheet[]) => navigate(previous => ({ ...previous, trail }), true);
   const sheet = trail[trail.length - 1];
   const [calculation, setCalculation] = useState(store.calculation);
   const [reminders, setReminders] = useState(store.reminders);
@@ -60,10 +66,10 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
     if (id === "coordinates") {
       setLatitude(store.coords.lat?.toString() || ""); setLongitude(store.coords.lon?.toString() || ""); setLocationName(store.location);
     }
-    setTrail(previous => [...previous, id]);
+    navigate(previous => ({ ...previous, trail: [...previous.trail, id] }));
   }
-  function closeSheet() { setTrail([]); setMessage(""); setError(""); }
-  function backSheet() { setTrail(previous => previous.slice(0, -1)); setMessage(""); setError(""); }
+  function closeSheet() { backSheet(); }
+  function backSheet() { backRoute({ page, trail: trail.slice(0, -1) }); setMessage(""); setError(""); }
   async function run(action: () => Promise<void>) {
     setBusy(true); setMessage(""); setError("");
     try { await action(); }
@@ -93,7 +99,7 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
 
   return <div className="mobile-page settings-page">
     <header className="mobile-header">
-      <button className="icon-button back-button" aria-label={page ? "Back to settings" : "Go back"} onClick={() => { if (page) { setPage(null); setMessage(""); setError(""); } else onBack(); }} disabled={busy}><ArrowLeft size={19} /></button>
+      <button className="icon-button back-button" aria-label={page ? "Back to settings" : "Go back"} onClick={() => { if (page) { backRoute({ page: null, trail: [] }); setMessage(""); setError(""); } else onBack(); }} disabled={busy}><ArrowLeft size={19} /></button>
       <h1>{page === "prayer" ? "Prayer Times Settings" : page === "hijri" ? "Hijri Settings" : "Settings"}</h1>
       {page === "prayer" ? <button className="icon-button back-button" aria-label="Location settings" disabled={busy} onClick={() => openSheet("location")}><MapPin size={20} /></button> : <span className="header-spacer" />}
     </header>

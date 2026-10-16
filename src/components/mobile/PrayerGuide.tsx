@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowUpRight, BookmarkSimple, CaretLeft, CaretRight } from '
 import { prayerGuideTopics } from './prayerGuideData';
 import { useSaved } from './useJournal';
 import './prayer-guide.css';
+import { useNavigationState } from '../../hooks/useNavigationState';
 
 function GuidePattern() {
   return <svg className="prayer-guide-pattern" viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">
@@ -12,7 +13,12 @@ function GuidePattern() {
 }
 
 export default function PrayerGuide({ onBack }: { onBack: () => void }) {
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, navigateSelected, backSelected] = useNavigationState<number | null>('guideTopic', null);
+  const setSelected = (action: Parameters<typeof navigateSelected>[0]) => {
+    const value = typeof action === 'function' ? action(selected) : action;
+    if (value === null && selected !== null) backSelected(null);
+    else navigateSelected(value);
+  };
   const [savedOnly, setSavedOnly] = useState(false);
   const [savedCards, setSavedCards] = useSaved<string[]>('salah-prayer-guide-bookmarks', []);
   const heading = useRef<HTMLHeadingElement>(null);

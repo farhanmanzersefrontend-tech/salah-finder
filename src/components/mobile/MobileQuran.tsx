@@ -5,14 +5,17 @@ import type { Ayah, SurahMeta } from '../../hooks/useQuranData';
 import { useSaved } from './useJournal';
 import MobileJuz from './MobileJuz';
 import QuranPlayer from './QuranPlayer';
+import { useNavigationState } from '../../hooks/useNavigationState';
 
 type Reading = { surah: number; name: string; ayah: number; total: number };
 export default function MobileQuran() {
   const { surahList, loadingList, error, fetchSurah } = useQuranData();
-  const [tab, setTab] = useState('Surah');
+  const [tab, setTab] = useNavigationState('quranTab', 'Surah');
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const [selected, setSelected] = useState<SurahMeta | null>(null);
+  const [reading, navigateReading, backReading] = useNavigationState<{ surah: SurahMeta; ayah: number } | null>('quranReading', null);
+  const selected = reading?.surah ?? null;
+  const setSelected = (value: SurahMeta | null) => value === null ? navigateReading(null, true) : navigateReading({ surah: value, ayah: 1 });
   const [data, setData] = useState<{arabic: Ayah[]; translation?: Ayah[]} | null>(null);
   const [busy, setBusy] = useState(false);
   const [readerError, setReaderError] = useState('');
@@ -20,25 +23,38 @@ export default function MobileQuran() {
   const [bookmarks, setBookmarks] = useSaved<Reading[]>('salah-quran-bookmarks', []);
   const request = useRef(0);
   const verseRefs = useRef<Record<number, HTMLElement | null>>({});
-  useEffect(() => () => { request.current++; }, []);
-  async function openSurah(surah: SurahMeta, ayah = 1) {
-    const id = ++request.current;
-    setSelected(surah); setData(null); setReaderError(''); setBusy(true); window.scrollTo({top:0});
-    try {
-      const result = await fetchSurah(surah.number);
-      if (id !== request.current) return;
-      if (!result?.arabic.length) throw new Error('No verses returned');
-      setData(result);
-      if (ayah > 1) window.setTimeout(() => verseRefs.current[ayah]?.scrollIntoView({block:'center'}), 100);
-    } catch { if (id === request.current) setReaderError('The verses could not be loaded. Check your connection and try again.'); }
-    finally { if (id === request.current) setBusy(false); }
+  const [attempt, setAttempt] = useState(0);
+  function openSurah(surah: SurahMeta, ayah = 1) {
+    if (reading?.surah.number === surah.number && reading.ayah === ayah) setAttempt(value => value + 1);
+    else navigateReading({ surah, ayah });
   }
+  useEffect(() => {
+    if (!reading) return;
+    const { surah, ayah } = reading;
+    let cancelled = false;
+    const id = ++request.current;
+    setData(null); setReaderError(''); setBusy(true); window.scrollTo({top:0});
+    async function load() {
+      try {
+        const result = await fetchSurah(surah.number);
+        if (cancelled || id !== request.current) return;
+        if (!result?.arabic.length) throw new Error('No verses returned');
+        setData(result);
+        if (ayah > 1) window.setTimeout(() => {
+          if (!cancelled) verseRefs.current[ayah]?.scrollIntoView({block:'center'});
+        }, 100);
+      } catch { if (!cancelled && id === request.current) setReaderError('The verses could not be loaded. Check your connection and try again.'); }
+      finally { if (!cancelled && id === request.current) setBusy(false); }
+    }
+    void load();
+    return () => { cancelled = true; };
+  }, [reading, fetchSurah, attempt]);
   function resume(reading: Reading) {
     const surah = surahList.find(item => item.number === reading.surah);
     if (surah) void openSurah(surah, reading.ayah);
   }
   const savedRow = (reading: Reading) => <button className="reading-card" key={`${reading.surah}-${reading.ayah}`} onClick={() => resume(reading)} disabled={loadingList || !!error}><span><strong>{reading.name}</strong><small>Ayah {reading.ayah} of {reading.total}</small></span><ArrowRight size={18}/></button>;
-  return <div className={`mobile-page quran-page ${selected ? 'has-player' : ''}`}>{selected && <QuranPlayer key={selected.number} surah={selected.number} name={selected.englishName}/>}<div className="page-title">{selected && <button className="icon-button" aria-label="Back to surahs" onClick={() => { request.current++; setSelected(null); setData(null); }}><ArrowLeft size={20}/></button>}<h1>{selected ? selected.englishName : 'Quran'}</h1><div className="title-actions"><button className="icon-button" aria-label="Show bookmarks" onClick={() => { request.current++; setSelected(null); setTab('Saved'); }}><BookmarkSimple size={20}/></button><button className="icon-button" aria-label="Search Quran surahs" onClick={() => { request.current++; setSelected(null); setSearching(v=>!v); setTab('Surah'); }}><MagnifyingGlass size={20}/></button></div></div>
+  return <div className={`mobile-page quran-page ${selected ? 'has-player' : ''}`}>{selected && <QuranPlayer key={selected.number} surah={selected.number} name={selected.englishName}/>}<div className="page-title">{selected && <button className="icon-button" aria-label="Back to surahs" onClick={() => { request.current++; backReading(null); setData(null); }}><ArrowLeft size={20}/></button>}<h1>{selected ? selected.englishName : 'Quran'}</h1><div className="title-actions"><button className="icon-button" aria-label="Show bookmarks" onClick={() => { request.current++; setSelected(null); setTab('Saved'); }}><BookmarkSimple size={20}/></button><button className="icon-button" aria-label="Search Quran surahs" onClick={() => { request.current++; setSelected(null); setSearching(v=>!v); setTab('Surah'); }}><MagnifyingGlass size={20}/></button></div></div>
     {selected ? <><div className="surah-reader-heading"><p lang="ar" dir="rtl">{selected.name}</p><span>{selected.numberOfAyahs} verses · Surah {selected.number}</span></div>{busy && <p className="loading-state" role="status">Opening your surah…</p>}{readerError && <div className="empty-state" role="alert"><p>{readerError}</p><button className="outline-button" onClick={() => void openSurah(selected)}>Try again</button></div>}{data?.arabic.map((ayah,index)=>{const reading = {surah:selected.number,name:selected.englishName,ayah:ayah.numberInSurah,total:selected.numberOfAyahs}; const saved = bookmarks.some(b=>b.surah === selected.number && b.ayah === ayah.numberInSurah); return <article className="ayah-block" key={ayah.number} ref={el=>{verseRefs.current[ayah.numberInSurah]=el;}}><div className="ayah-actions"><span>{selected.number}:{ayah.numberInSurah}</span><div><button aria-label={`Bookmark verse ${ayah.numberInSurah}`} aria-pressed={saved} onClick={()=>setBookmarks(previous=>saved ? previous.filter(b=>!(b.surah === reading.surah && b.ayah === reading.ayah)) : [...previous,reading])}><BookmarkSimple size={19} weight={saved ? 'fill' : 'regular'}/></button><button className={last?.surah === reading.surah && last.ayah === reading.ayah ? 'marked-read' : ''} onClick={()=>setLast(reading)}><BookBookmark size={17}/> Last read</button></div></div><p className="arabic-text" lang="ar" dir="rtl">{ayah.text}</p>{data.translation?.[index] ? <p className="verse-translation">{data.translation[index].text}</p> : <p className="verse-translation">Translation unavailable.</p>}</article>;})}</> : <>
       <p className="page-subtitle">Let every verse bring you closer.</p>{last && <section className="continue-reading"><div><BookOpen size={20}/><span>Continue your journey</span></div>{savedRow(last)}<div className="reading-progress"><i style={{width:`${last.ayah / last.total * 100}%`}}/></div></section>}
       <div className="segment-control">{['Surah','Juz','Saved','Progress'].map(t=><button key={t} className={tab === t ? 'active' : ''} aria-pressed={tab === t} onClick={()=>setTab(t)}>{t}</button>)}</div>
