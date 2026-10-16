@@ -43,6 +43,9 @@ import MobileQuran from "./MobileQuran";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
 import ProfileOther from "./ProfileOther";
+import ProfileGuides, { GuideComingSoon } from "./ProfileGuides";
+import type { GuideScreen } from "./ProfileGuides";
+import IslamicCalendar from "./IslamicCalendar";
 import CitySearch, { cityLabel } from "./CitySearch";
 import type { CitySuggestion } from "./CitySearch";
 import "./mobile.css";
@@ -51,6 +54,7 @@ import "./night.css";
 import useVisitorCount from "../../hooks/useVisitorCount";
 
 type Screen =
+  | GuideScreen
   | "home"
   | "stats"
   | "dua"
@@ -775,12 +779,25 @@ export default function MobileApp() {
                 </button>
               ))}
             </div>
+            <ProfileGuides onOpen={go} />
             <ProfileOther />
             <p className="profile-footer">
               Awqat Al-Salah · Made for your everyday faith
               <br />
               Your activity is saved on this device.
             </p>
+          </div>
+        )}
+        {(screen === "prayer-guide" || screen === "wudu-guide") && (
+          <div className="mobile-page">
+            {header(screen === "prayer-guide" ? "Prayer Guide" : "Wudu Guide", "profile")}
+            <GuideComingSoon kind={screen} />
+          </div>
+        )}
+        {screen === "islamic-calendar" && (
+          <div className="mobile-page">
+            {header("Islamic Calendar", "profile")}
+            <IslamicCalendar today={now} hijriOffset={hijriOffset} />
           </div>
         )}
         {screen === "masjid" && (
