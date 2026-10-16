@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, BookmarkSimple, CaretLeft, CaretRight } from 'phosphor-react';
 import { prayerGuideTopics } from './prayerGuideData';
+import { wuduGuideTopics } from './wuduGuideData';
+import { guideUrdu } from './guideUrdu';
 import { useSaved } from './useJournal';
 import './prayer-guide.css';
 import { useNavigationState } from '../../hooks/useNavigationState';
@@ -12,18 +14,23 @@ function GuidePattern() {
   </svg>;
 }
 
-export default function PrayerGuide({ onBack }: { onBack: () => void }) {
-  const [selected, navigateSelected, backSelected] = useNavigationState<number | null>('guideTopic', null);
+export default function PrayerGuide({ onBack, kind = 'prayer' }: { onBack: () => void; kind?: 'prayer' | 'wudu' }) {
+  const topics = kind === 'wudu' ? wuduGuideTopics : prayerGuideTopics;
+  const title = kind === 'wudu' ? 'Wudu Guide' : 'Prayer Guide';
+  const note = kind === 'wudu'
+    ? 'A short introduction to Sunni wudu with Quran and hadith references. Some details and rulings differ between schools; follow your trusted teacher for those practices.'
+    : 'A short introduction to Sunni salah. Some details differ between schools; follow your trusted teacher for those practices.';
+  const [selected, navigateSelected, backSelected] = useNavigationState<number | null>(kind === 'wudu' ? 'wuduTopic' : 'guideTopic', null);
   const setSelected = (action: Parameters<typeof navigateSelected>[0]) => {
     const value = typeof action === 'function' ? action(selected) : action;
     if (value === null && selected !== null) backSelected(null);
     else navigateSelected(value);
   };
   const [savedOnly, setSavedOnly] = useState(false);
-  const [savedCards, setSavedCards] = useSaved<string[]>('salah-prayer-guide-bookmarks', []);
+  const [savedCards, setSavedCards] = useSaved<string[]>(`salah-${kind}-guide-bookmarks`, []);
   const heading = useRef<HTMLHeadingElement>(null);
-  const topic = selected === null ? null : prayerGuideTopics[selected];
-  const visibleTopics = prayerGuideTopics.map((item, index) => ({ ...item, index }))
+  const topic = selected === null ? null : topics[selected];
+  const visibleTopics = topics.map((item, index) => ({ ...item, index }))
     .filter(item => !savedOnly || item.cards.some(card => savedCards.includes(card.id)));
 
   useEffect(() => {
@@ -42,7 +49,7 @@ export default function PrayerGuide({ onBack }: { onBack: () => void }) {
   return <div className="mobile-page prayer-guide-page">
     <header className="mobile-header prayer-guide-header">
       <button className="icon-button back-button" aria-label={topic ? 'Back to guide topics' : savedOnly ? 'Back to all topics' : 'Back to profile'} onClick={goBack}><ArrowLeft size={19} /></button>
-      <h1 ref={heading} tabIndex={-1}>{topic?.title ?? (savedOnly ? 'Saved topics' : 'Prayer Guide')}</h1>
+      <h1 ref={heading} tabIndex={-1}>{topic?.title ?? (savedOnly ? 'Saved topics' : title)}</h1>
       <button className="icon-button guide-saved-toggle" aria-label={savedOnly ? 'Show all guide topics' : 'Show saved guide topics'} aria-pressed={savedOnly} onClick={() => { setSelected(null); setSavedOnly(value => !value); }}>
         <BookmarkSimple size={22} weight={savedOnly ? 'fill' : 'regular'} />
       </button>
@@ -50,7 +57,7 @@ export default function PrayerGuide({ onBack }: { onBack: () => void }) {
 
     <div className="prayer-guide-surface">
       {topic ? <>
-        <p className="prayer-guide-eyebrow">Topic {selected! + 1} of {prayerGuideTopics.length}</p>
+        <p className="prayer-guide-eyebrow">{title} · Topic {selected! + 1} of {topics.length}</p>
         <div className="prayer-guide-readings">
           {topic.cards.map(card => <article className="prayer-guide-reading" key={card.id}>
             <GuidePattern />
@@ -63,8 +70,10 @@ export default function PrayerGuide({ onBack }: { onBack: () => void }) {
               <p className="guide-reading-arabic" lang="ar" dir="rtl">{card.arabic}</p>
               <p className="guide-reading-transliteration">{card.transliteration}</p>
               <p className="guide-reading-meaning">{card.meaning}</p>
+              {guideUrdu[card.id]?.meaning && <p className="guide-reading-urdu guide-meaning-urdu" lang="ur" dir="rtl">{guideUrdu[card.id].meaning}</p>}
             </>}
             <p className="guide-reading-copy">{card.text}</p>
+            {guideUrdu[card.id] && <p className="guide-reading-urdu" lang="ur" dir="rtl">{guideUrdu[card.id].text}</p>}
             {card.rows && <table className="guide-rakah-table">
               <caption>Fard rak‘ahs for a resident</caption>
               <thead><tr><th scope="col">Prayer</th><th scope="col">Rak‘ahs</th></tr></thead>
@@ -87,7 +96,7 @@ export default function PrayerGuide({ onBack }: { onBack: () => void }) {
           <BookmarkSimple size={32} /><h2>Your saved topics will appear here</h2><p>Open a topic and tap a card’s bookmark to save it.</p>
           <button className="outline-button" onClick={() => setSavedOnly(false)}>Explore the guide</button>
         </div>}
-        {!savedOnly && <p className="prayer-guide-note">A short introduction to Sunni salah. Some details differ between schools; follow your trusted teacher for those practices.</p>}
+        {!savedOnly && <p className="prayer-guide-note">{note}</p>}
       </>}
     </div>
 
@@ -95,10 +104,10 @@ export default function PrayerGuide({ onBack }: { onBack: () => void }) {
       {topic ? <>
         <button className="guide-previous" disabled={selected === 0} aria-label="Previous topic" onClick={() => setSelected(value => Math.max(0, (value ?? 0) - 1))}><CaretLeft size={20} /></button>
         <button className="guide-next" onClick={() => {
-          if (selected === prayerGuideTopics.length - 1) { setSelected(null); setSavedOnly(false); }
+          if (selected === topics.length - 1) { setSelected(null); setSavedOnly(false); }
           else setSelected(value => (value ?? 0) + 1);
         }}>
-          <span><small>{selected === prayerGuideTopics.length - 1 ? 'You’ve reached the end' : 'Up next'}</small>{selected === prayerGuideTopics.length - 1 ? 'Back to all topics' : prayerGuideTopics[selected! + 1].title}</span>
+          <span><small>{selected === topics.length - 1 ? 'You’ve reached the end' : 'Up next'}</small>{selected === topics.length - 1 ? 'Back to all topics' : topics[selected! + 1].title}</span>
           <CaretRight size={20} />
         </button>
       </> : <button className="guide-start" onClick={() => setSelected(visibleTopics[0].index)}>Get started <CaretRight size={20} /></button>}

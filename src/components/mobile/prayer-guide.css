@@ -22,6 +22,8 @@
 .prayer-guide-reading .guide-reading-transliteration { font-size: 12px; line-height: 1.8; color: var(--deep); }
 .prayer-guide-reading .guide-reading-meaning { margin: 22px 0 0; font-size: 12px; line-height: 1.9; color: var(--ink); }
 .prayer-guide-reading .guide-reading-copy { margin-top: 16px; font-size: 12px; line-height: 1.9; color: var(--muted); }
+.prayer-guide-reading .guide-reading-urdu { margin-top: 12px; font-family: inherit; font-size: 12px; font-weight: 400; line-height: 1.9; text-align: right; color: var(--muted); overflow-wrap: anywhere; }
+.prayer-guide-reading .guide-meaning-urdu { text-align: center; color: var(--deep); }
 .guide-excerpt-label { display: block; margin-top: 8px; font-size: 9px; color: var(--muted); }
 .guide-reading-sources { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; padding-top: 15px; margin-top: 22px; border-top: 1px solid var(--line); }
 .guide-reading-sources a { display: inline-flex; align-items: center; gap: 4px; color: var(--deep); font-size: 9px; text-decoration: underline; text-underline-offset: 3px; }
@@ -54,6 +56,6 @@
   .prayer-guide-page .prayer-guide-topics button { min-height: 58px; font-size: 14px; }
   .prayer-guide-reading { padding: 40px 32px 28px; }
   .prayer-guide-reading .guide-reading-arabic { font-size: 32px; }
-  .prayer-guide-reading .guide-reading-copy,.prayer-guide-reading .guide-reading-meaning { font-size: 14px; }
+  .prayer-guide-reading .guide-reading-copy,.prayer-guide-reading .guide-reading-meaning,.prayer-guide-reading .guide-reading-urdu { font-size: 14px; }
   .prayer-guide-footer { bottom: 116px; }
 }

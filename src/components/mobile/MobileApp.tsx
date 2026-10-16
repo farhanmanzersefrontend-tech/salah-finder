@@ -46,7 +46,7 @@ import MobileQuran from "./MobileQuran";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
 import ProfileOther from "./ProfileOther";
-import ProfileGuides, { GuideComingSoon } from "./ProfileGuides";
+import ProfileGuides from "./ProfileGuides";
 import type { GuideScreen } from "./ProfileGuides";
 import IslamicCalendar from "./IslamicCalendar";
 import PrayerGuide from "./PrayerGuide";
@@ -798,12 +798,7 @@ export default function MobileApp() {
           </div>
         )}
         {screen === "prayer-guide" && <PrayerGuide onBack={() => goBack("profile")} />}
-        {screen === "wudu-guide" && (
-          <div className="mobile-page">
-            {header("Wudu Guide", "profile")}
-            <GuideComingSoon kind={screen} />
-          </div>
-        )}
+        {screen === "wudu-guide" && <PrayerGuide kind="wudu" onBack={() => goBack("profile")} />}
         {screen === "islamic-calendar" && (
           <div className="mobile-page">
             {header("Islamic Calendar", "profile")}
