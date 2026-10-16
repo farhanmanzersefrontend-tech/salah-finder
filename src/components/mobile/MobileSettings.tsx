@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowLeft, Bell, CalendarBlank, CaretRight, Clock, GearSix, MapPin, Moon, SpeakerSlash } from "phosphor-react";
+import { ArrowCounterClockwise, ArrowLeft, Bell, CalendarBlank, CaretRight, Clock, GearSix, MapPin, Moon, SpeakerSlash } from "phosphor-react";
 import { CALCULATION_METHODS, usePrayerStore } from "../../store/usePrayerStore";
 import type { CalculationSettings } from "../../store/usePrayerStore";
 import { PRAYER_ORDER } from "../../utils/prayerNames";
@@ -30,10 +30,11 @@ type Sheet = keyof typeof sheetTitles;
 const highLatitudeOptions = [{ id: 1, label: "Middle of the night" }, { id: 2, label: "One seventh of the night" }, { id: 3, label: "Angle based" }];
 const offsetLabel = (minutes: number) => minutes === 0 ? "At prayer time" : `${Math.abs(minutes)} min ${minutes < 0 ? "before" : "after"}`;
 
-export default function MobileSettings({ onBack, onLocation, onCalculation, hijriOffset, onHijriOffset, hijriDate }: {
+export default function MobileSettings({ onBack, onLocation, onCalculation, onReset, hijriOffset, onHijriOffset, hijriDate }: {
   onBack: () => void;
   onLocation: (lat: number, lon: number, label: string) => Promise<void>;
   onCalculation: (settings: CalculationSettings) => Promise<void>;
+  onReset: () => void;
   hijriOffset: number;
   onHijriOffset: (days: number) => void;
   hijriDate: string;
@@ -102,6 +103,13 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, hijr
         setMessage(""); setError("");
         if (id === "prayer" || id === "hijri") { setPage(id); window.scrollTo({ top: 0 }); } else openSheet(id);
       }}><span className="settings-card-icon"><Icon size={23} weight="duotone" /></span><span className="settings-card-copy"><strong>{title}</strong><small>{description}</small></span><CaretRight className="settings-chevron" size={18} aria-hidden="true" /></button>)}</div>
+      <button type="button" className="outline-button settings-spaced" disabled={busy} onClick={() => { void run(async () => {
+        onReset();
+        const defaults = usePrayerStore.getState();
+        setCalculation(defaults.calculation); setReminders(defaults.reminders); setSilent(defaults.silent);
+        setMessage("Settings reset to defaults. Choose your location to see prayer times.");
+      }); }}><ArrowCounterClockwise size={18} aria-hidden="true" />Reset settings</button>
+      <p className="settings-hint">Restore all settings, including appearance, to their defaults and clear your saved location. Your prayer history is kept.</p>
       <p className="settings-footnote">Made for your everyday faith.<br />Your preferences are saved on this device.</p>
     </>}
 

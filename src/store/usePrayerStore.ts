@@ -66,13 +66,14 @@ interface PrayerState {
   setLocationPreferences: (patch: Partial<LocationPreferences>) => void;
   setTimezone: (timezone: string) => void;
   setQuietStatus: (quietActive: boolean, quietMessage: string) => void;
+  resetSettings: () => void;
 
   setAzanSettings: (patch: Partial<AzanSettings>) => void;
 }
 
 export const usePrayerStore = create<PrayerState>()(
   persist(
-    (set) => ({
+    (set, _get, api) => ({
       location: "",
       coords: { lat: null, lon: null },
       calculation: DEFAULT_CALCULATION,
@@ -128,6 +129,22 @@ export const usePrayerStore = create<PrayerState>()(
       setLocationPreferences: (patch) => set(state => ({ locationPreferences: { ...state.locationPreferences, ...patch } })),
       setTimezone: (timezone) => set({ timezone }),
       setQuietStatus: (quietActive, quietMessage) => set({ quietActive, quietMessage }),
+      resetSettings: () => {
+        const defaults = api.getInitialState();
+        set(structuredClone({
+          location: defaults.location,
+          coords: defaults.coords,
+          timings: defaults.timings,
+          calculation: defaults.calculation,
+          reminders: defaults.reminders,
+          silent: defaults.silent,
+          locationPreferences: defaults.locationPreferences,
+          azan: defaults.azan,
+          timezone: defaults.timezone,
+          quietActive: defaults.quietActive,
+          quietMessage: defaults.quietMessage,
+        }));
+      },
 
       setAzanSettings: (patch) =>
         set((state) => ({

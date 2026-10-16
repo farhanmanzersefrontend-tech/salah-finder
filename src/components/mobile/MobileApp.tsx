@@ -32,6 +32,7 @@ import { PRAYER_ORDER } from "../../utils/prayerNames";
 import { getNextPrayer } from "../../utils/azanScheduler";
 import { adjustPrayerTimes, prayerWallDate, timeMinutes, validateCalculation } from "../../utils/prayerPreferences";
 import { currentPrayerLocation } from "../../utils/prayerLocation";
+import { stopAzan } from "../../utils/playAzan";
 import AzanPanel from "../AzanPanel";
 import QiblaPage from "../QiblaPage";
 import AsmaPage from "../AsmaPage";
@@ -176,6 +177,17 @@ export default function MobileApp() {
     if (store.coords.lat !== null && store.coords.lon !== null) {
       await loadTimes(store.coords.lat, store.coords.lon, store.location, calculation);
     } else store.setCalculation(calculation);
+  }
+
+  function resetSettings() {
+    timesRequest.current?.abort();
+    stopAzan();
+    store.resetSettings();
+    setTheme(0);
+    setNight(false);
+    setHijriOffset(0);
+    setLocationError("");
+    localStorage.removeItem("salah-times-date");
   }
   // Refresh the selected location each day so saved timings never silently become yesterday's schedule.
   useEffect(() => {
@@ -623,6 +635,7 @@ export default function MobileApp() {
         {screen === "dua" && <MobileDuas />}
         {screen === "quran" && <MobileQuran />}
         {screen === "settings" && <MobileSettings
+          onReset={resetSettings}
           onBack={() => go("home")}
           onLocation={loadTimes}
           onCalculation={saveCalculation}

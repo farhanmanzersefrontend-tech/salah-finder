@@ -168,6 +168,22 @@ try {
   await tick();
   assert.equal(notifications.length, countBeforeRemount, 'Delivery history survives scheduler remount');
   cleanupAgain.forEach(fn => fn?.());
+  saved.set('salah-mobile-journal', JSON.stringify({ '2026-10-16': ['Fajr'] }));
+  store.getState().setCoords({ lat: 25, lon: 55 });
+  store.getState().setTimezone('Asia/Dubai');
+  store.getState().setLocationPreferences({ method: 'gps', useInternet: false });
+  store.getState().setQuietStatus(true, 'Quiet time started');
+  store.getState().resetSettings();
+  const defaults = store.getInitialState();
+  for (const key of ['location', 'coords', 'timings', 'calculation', 'reminders', 'silent', 'locationPreferences', 'azan', 'timezone', 'quietActive', 'quietMessage']) {
+    assert.deepEqual(store.getState()[key], defaults[key], `Reset restores ${key}`);
+  }
+  await store.persist.rehydrate();
+  assert.deepEqual(store.getState().calculation, DEFAULT_CALCULATION, 'Reset calculation survives reload');
+  assert.equal(store.getState().azan.notificationsEnabled, false, 'Reset notifications remain disabled after reload');
+  assert.deepEqual(store.getState().coords, { lat: null, lon: null }, 'Reset location stays cleared after reload');
+  assert.deepEqual(JSON.parse(saved.get('salah-mobile-journal')), { '2026-10-16': ['Fajr'] }, 'Reset preserves prayer history');
+  console.log('PASS: reset restores defaults, persists across reloads, and preserves prayer history.');
   console.log('PASS: preference migration/persistence, calculation adjustments, Ramadan and Friday rules, invalid inputs, midnight handling, timezone conversion, reminder offsets, quiet transitions, location preferences, and scheduler remount.');
 } finally {
   await rm(output, { force: true });
