@@ -446,6 +446,14 @@ export default function MobileApp() {
                   </div>
                 ))}
               </div>
+              <button
+                type="button"
+                className="outline-button azan-settings-cta"
+                onClick={() => go("alarm")}
+              >
+                <SpeakerHigh size={17} aria-hidden="true" /> Azan settings & voices
+                <CaretRight size={16} aria-hidden="true" />
+              </button>
               {!hasTimes && (
                 <button
                   className="outline-button location-cta"
