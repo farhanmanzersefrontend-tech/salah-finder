@@ -1,9 +1,14 @@
 const numericHijri = new Intl.DateTimeFormat('en-GB', {
-  calendar: 'islamic-umalqura', day: 'numeric', month: 'numeric', year: 'numeric',
+  calendar: 'islamic-umalqura', numberingSystem: 'latn', day: 'numeric', month: 'numeric', year: 'numeric',
 });
-const longHijri = new Intl.DateTimeFormat('en-GB', {
-  calendar: 'islamic-umalqura', day: 'numeric', month: 'long', year: 'numeric',
-});
+
+// Use the Hijri month number: some browser locale data returns Gregorian
+// names for Islamic months (for example, "May" for Hijri month 5).
+const hijriMonthNames = [
+  'Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani',
+  'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', "Sha'ban",
+  'Ramadan', 'Shawwal', "Dhul Qa'dah", 'Dhul Hijjah',
+];
 
 export function shiftDate(date: Date, days: number) {
   const result = new Date(date);
@@ -19,9 +24,9 @@ export function hijriParts(date: Date, offset: number) {
 }
 
 export function formatHijri(date: Date, offset: number, monthOnly = false) {
-  return longHijri.formatToParts(shiftDate(date, offset))
-    .filter(part => part.type === 'month' || part.type === 'year' || (!monthOnly && part.type === 'day'))
-    .map(part => part.value).join(' ');
+  const { day, month, year } = hijriParts(date, offset);
+  const monthAndYear = `${hijriMonthNames[month - 1]} ${year}`;
+  return monthOnly ? monthAndYear : `${day} ${monthAndYear}`;
 }
 
 export function hijriMonth(date: Date, offset: number) {

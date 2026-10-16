@@ -33,6 +33,7 @@ import { getNextPrayer } from "../../utils/azanScheduler";
 import { adjustPrayerTimes, prayerWallDate, timeMinutes, validateCalculation } from "../../utils/prayerPreferences";
 import { currentPrayerLocation } from "../../utils/prayerLocation";
 import { stopAzan } from "../../utils/playAzan";
+import { formatHijri } from "../../utils/islamicCalendar";
 import AzanPanel from "../AzanPanel";
 import QiblaPage from "../QiblaPage";
 import AsmaPage from "../AsmaPage";
@@ -72,12 +73,6 @@ const gregorianDateFormat = new Intl.DateTimeFormat("en-GB", {
   weekday: "long",
   day: "numeric",
   month: "short",
-  year: "numeric",
-});
-const hijriDateFormat = new Intl.DateTimeFormat("en-GB", {
-  calendar: "islamic-umalqura",
-  day: "numeric",
-  month: "long",
   year: "numeric",
 });
 
@@ -120,11 +115,7 @@ export default function MobileApp() {
   const today = dayKey(now);
   const prayerNow = prayerWallDate(now, store.timezone);
   const prayerToday = dayKey(prayerNow);
-  const adjustedHijriDate = new Date(now);
-  adjustedHijriDate.setDate(adjustedHijriDate.getDate() + hijriOffset);
-  const hijriDate = hijriDateFormat.formatToParts(adjustedHijriDate)
-    .filter((part) => part.type !== "era")
-    .map((part) => part.value).join("").trim();
+  const hijriDate = formatHijri(now, hijriOffset);
   const done = journal[today] || [];
   const streak = getStreak(journal, now);
   const hasTimes = PRAYER_ORDER.every((p) =>
