@@ -99,7 +99,7 @@ function ClockFace({ now }: { now: Date }) {
   );
 }
 
-export default function MobileApp() {
+export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer: string | null; onMuteAzan: () => void }) {
   const [screen, setScreen, backScreen] = useNavigationState<Screen>("screen", "home", true);
   const [now, setNow] = useState(new Date());
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
@@ -184,6 +184,7 @@ export default function MobileApp() {
   function resetSettings() {
     timesRequest.current?.abort();
     stopAzan();
+    onMuteAzan();
     store.resetSettings();
     setTheme(0);
     setNight(false);
@@ -274,6 +275,14 @@ export default function MobileApp() {
     <div
       className={`mobile-app theme-${theme} ${night ? "night-mode" : "day-mode"} screen-${screen}`}
     >
+      {playingPrayer && <aside className="azan-playing-popup" aria-label="Azan playback controls">
+        <div className="azan-playing-heading" role="status">
+          <SpeakerHigh size={24} aria-hidden="true" />
+          <div><strong>{playingPrayer} · Azan is playing</strong><p>Your call to prayer</p></div>
+        </div>
+        <button className="primary-button" type="button" onClick={onMuteAzan}><SpeakerSlash size={18} /> Mute this azan</button>
+        <button className="outline-button" type="button" onClick={() => { store.setAzanSettings({ autoAzanEnabled: false }); onMuteAzan(); }}>Turn off automatic azan</button>
+      </aside>}
       <main className="mobile-main">
         {screen === "home" && (
           <>

@@ -2,6 +2,18 @@
 
 Awqat Al-Salah is a prayer companion with prayer times, Quran reading, Qibla direction, duas, and daily prayer tracking. Built with React, TypeScript, and Vite.
 
+## Azan playback and mobile notifications
+
+While the web app is running, automatic azan displays the salah name and a popup with **Mute this azan** and **Turn off automatic azan**. With notification permission, it also shows a system notification with a mute action on supported browsers. Lock-screen media controls can stop playback where supported. HTTPS is required for the notification service worker; localhost also works for development.
+
+Closing or suspending the web app can stop its scheduler. The service worker handles notification actions; it does not schedule closed-app azan, and this project has no Web Push subscription backend. Enabling mobile data alone cannot provide closed-app playback.
+
+Closed-app reminders require a deployed push backend and subscriptions, or native scheduled notifications. Full background azan on Android needs a native alarm/playback implementation and foreground media service. iPhone notification sounds must be shorter than 30 seconds; a full recitation cannot be promised as an ordinary closed-app notification. Native Android/iOS projects and signing are not configured in this repository.
+
+References: [Web background operation](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation), [Android background playback](https://developer.android.com/media/media3/session/background-playback), [Apple notification sounds](https://developer.apple.com/documentation/usernotifications/unnotificationsound).
+
+Run `node scripts/check-prayer-settings.mjs` and `node scripts/check-notification-actions.mjs` to check scheduling, mute controls, and notification actions without sending real notifications.
+
 ## Visitor count on Vercel
 
 The home footer displays a shared visit total from `/api/visitors`. Each browser starts a new visit on opening the app after its 30-minute visit window expires. Refreshes and repeat opens within that window reuse an anonymous random ID. This counts visits, not distinct people or currently online users. No name, IP address, or location is stored by the counter. Clearing browser storage can start another visit.

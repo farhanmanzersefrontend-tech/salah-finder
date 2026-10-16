@@ -24,7 +24,7 @@ await build({
       build.onResolve({ filter: /^react$/ }, (args) => args.importer.endsWith('useAzan.ts') ? { path: 'react', namespace: 'scheduler-test' } : undefined);
       build.onLoad({ filter: /.*/, namespace: 'scheduler-test' }, () => ({
         contents: `export const useEffect = effect => globalThis.testEffects.push(effect);
-          export const useState = value => [value, () => {}];`,
+          export const useState = value => [value, next => globalThis.testStateUpdates.push(next)];`,
         loader: 'js',
       }));
     },
@@ -46,6 +46,7 @@ try {
   globalThis.Notification = class {
     static permission = 'granted';
     constructor(title, options) { notifications.push({ title, ...options }); }
+    close() { this.onclose?.(); }
   };
   globalThis.window = {
     Notification,
@@ -58,6 +59,7 @@ try {
     constructor(...args) { super(...(args.length ? args : clock)); }
   };
   globalThis.testEffects = [];
+  globalThis.testStateUpdates = [];
   const { default: { usePrayerStore: store, useAzan, DEFAULT_CALCULATION, DEFAULT_SILENT, adjustPrayerTimes, validateCalculation, validateCoordinates, shiftTime, preferenceEvents, quietPeriodActive, prayerWallDate, currentPrayerLocation } } = await import(pathToFileURL(output));
   assert.equal(store.getState().location, 'Saved city');
   assert.deepEqual(store.getState().calculation, { ...DEFAULT_CALCULATION, method: 1, school: 1 }, 'Old nested calculation preferences receive new defaults');
@@ -88,7 +90,7 @@ try {
     notificationsEnabled: true,
     perPrayer: { Fajr: false, Dhuhr: true, Asr: true, Maghrib: true, Isha: true },
   });
-  useAzan();
+  const azanControls = useAzan();
   const cleanup = testEffects.map(effect => effect());
   const tick = () => [...callbacks.values()].find(timer => timer.delay === 1000).callback();
   await tick();
@@ -123,8 +125,9 @@ try {
   store.getState().setSilent(silent);
   let audioDownloads = 0;
   let audioPlays = 0;
+  let audioPauses = 0;
   globalThis.fetch = async () => { audioDownloads++; return { ok: true, blob: async () => new Blob(['test audio']) }; };
-  globalThis.Audio = class { async play() { audioPlays++; } pause() {} };
+  globalThis.Audio = class { async play() { audioPlays++; } pause() { audioPauses++; } };
   store.getState().setAzanSettings({ autoAzanEnabled: true });
   clock = [2026, 9, 16, 23, 50, 12];
   await tick();
@@ -141,6 +144,13 @@ try {
   clock = [2026, 9, 17, 5, 0, 12];
   await tick();
   assert.equal(audioPlays, 1, 'Azan plays again when quiet mode is disabled');
+  assert.equal(testStateUpdates.at(-1), 'Fajr', 'Popup identifies the salah after playback starts');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(notifications.at(-1).title, /Fajr.*Azan is playing/, 'Playing notification identifies the salah');
+  const pausesBeforeMute = audioPauses;
+  azanControls.stopAzan();
+  assert.equal(audioPauses, pausesBeforeMute + 1, 'Mute stops the playing audio');
+  assert.equal(testStateUpdates.at(-1), null, 'Mute clears the playing popup');
   await tick();
   assert.equal(audioPlays, 1, 'Repeated ticks do not replay azan');
   const persisted = JSON.parse(saved.get('prayer-storage')).state;
