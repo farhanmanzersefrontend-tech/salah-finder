@@ -1,6 +1,6 @@
-# React + TypeScript + Vite
+# Awqat Al-Salah
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Awqat Al-Salah is a prayer companion with prayer times, Quran reading, Qibla direction, duas, and daily prayer tracking. Built with React, TypeScript, and Vite.
 
 Currently, two official plugins are available:
 

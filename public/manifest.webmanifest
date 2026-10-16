@@ -1,0 +1,15 @@
+{
+  "id": "/",
+  "name": "Awqat Al-Salah",
+  "short_name": "Awqat Al-Salah",
+  "description": "Your daily companion for prayer times, Quran, and remembrance.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8faf2",
+  "theme_color": "#355d57",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

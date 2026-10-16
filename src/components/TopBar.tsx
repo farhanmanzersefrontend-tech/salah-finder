@@ -3,7 +3,6 @@ import axios from "axios";
 import { MapPin, MagnifyingGlass } from "phosphor-react";
 import { usePrayerFetcher } from "../hooks/usePrayerFetcher";
 import { usePrayerStore } from "../store/usePrayerStore";
-import logo from "../assets/logo-salah-fav.png";
 
 const TopBar = () => {
   const storeLocation = usePrayerStore((state) => state.location);
@@ -111,7 +110,10 @@ const TopBar = () => {
 
   return (
     <div className="flex flex-col lg:flex-row justify-between items-center p-4 gap-3">
-      <img src={logo} alt="Logo" className="h-18 lg:ml-15" />
+      <div className="flex shrink-0 items-center gap-3 lg:ml-15" aria-label="Awqat Al-Salah">
+        <img src="/favicon.svg" alt="" className="h-12 w-12" />
+        <span className="text-xl font-semibold tracking-tight text-[#355d57]">Awqat Al-Salah</span>
+      </div>
 
       <div className="flex flex-wrap items-center justify-center gap-4 w-full">
         {!canShowSelected ? (

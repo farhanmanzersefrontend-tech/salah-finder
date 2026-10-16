@@ -24,8 +24,7 @@ export const showPrayerNotification = (title: string, body: string) => {
   try {
     return new Notification(title, {
       body,
-      // use existing public assets if any; safe fallback to favicon
-      icon: "/favicon.png",
+      icon: "/icon-192.png",
       tag: "prayer-azan",
     });
   } catch {
