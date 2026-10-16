@@ -1,0 +1,79 @@
+.day-night-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 6px 9px;
+  border: 1px solid #ffffff90;
+  border-radius: 24px;
+  background: #ffffff70;
+  color: var(--deep);
+}
+.day-night-track { width: 34px; height: 20px; padding: 3px; border-radius: 12px; background: #8ca69c; }
+.day-night-track > span { display: block; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px #0002; }
+.day-night-toggle[aria-checked="true"] .day-night-track { background: #a597cd; }
+.day-night-toggle[aria-checked="true"] .day-night-track > span { transform: translateX(14px); }
+.day-night-label { font-size: 10px; min-width: 28px; }
+.home-bottom .visitor-count { margin-top: 12px; color: var(--muted); font-size: 10px; }
+.visitor-count strong { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--deep); }
+
+.mobile-app.night-mode {
+  color-scheme: dark;
+  --ink: #e7eeeb;
+  --muted: #a9bbb4;
+  --teal: #99cfbe;
+  --deep: #bdded0;
+  --mint: #2c4540;
+  --line: #394b47;
+  --night-surface: #20332f;
+  --night-raised: #2c423c;
+  background: linear-gradient(160deg, #203b34, #172822 55%, #111c1b);
+}
+.mobile-app.night-mode.theme-1 { --night-surface: #2c293d; --night-raised: #39354c; --line: #48435d; --deep: #d5caef; --teal: #c3b5df; background: linear-gradient(160deg, #373049, #211f30 55%, #171620); }
+.mobile-app.night-mode.theme-2 { --night-surface: #352e28; --night-raised: #453b32; --line: #53483d; --deep: #ead0ad; --teal: #dfbe91; background: linear-gradient(160deg, #44372a, #2b241e 55%, #1d1916); }
+.night-mode :is(.prayer-sheet, .profile-card, .settings-list, .theme-card, .dua-row, .dua-detail, .continue-reading, .reading-card, .quran-progress-card, .prayer-calendar, .progress-pair article, .stat-pair article, .hadith-list article, .masjid-sheet, .location-dialog, .search-field, .city-suggestions, .quran-player) {
+  background: var(--night-surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.night-mode :is(.mobile-nav, .next-prayer-card) { background: color-mix(in srgb, var(--night-surface) 94%, transparent); border-color: var(--line); }
+.night-mode :is(.next-prayer-tag, .small-pill, .setting-icon, .completed-pill, .mini-mosque, .surah-number, .back-button, .outline-button, .theme-card button, .progress-ring > div, .stat-caption, .juz-back, .quran-player-tools select, .day-night-toggle) { background: var(--night-raised); border-color: var(--line); color: var(--deep); }
+.night-mode .mini-mosque { box-shadow: none; }
+.night-mode :is(.primary-button, .quran-player .quran-play-button) { background: #406c5f; border-color: #649480; color: #fff; }
+.night-mode .wordmark, .night-mode .glass-button { color: #f2f3ec !important; }
+.night-mode .glass-button { background: #24332e99; }
+.night-mode .home-hero > .mosque-scene { filter: brightness(.65) saturate(.8); }
+.night-mode :is(.page-subtitle, .today-heading p, .prayer-row time, .home-bottom > div, .profile-card p, .settings-list small, .section-label, .profile-footer, .calendar-day, .prayer-calendar > p, .gentle-note, .dua-translation, .source-label, .empty-state, .loading-state, .reading-card small, .surah-list-mobile small, .quran-progress-card p, .surah-reader-heading span, .verse-translation, .masjid-sheet p, .location-dialog > p, .or-divider, .hadith-list p, .hadith-list small, .city-search-status, .city-search-credit, .city-suggestions small, .quran-player-title > span, .quran-player-time > span) { color: var(--muted); }
+.night-mode :is(.surah-arabic, .surah-reader-heading p, .dua-detail .arabic-text, .large-progress, .city-suggestions strong, .city-suggestions li, .quran-player-tools button, .ayah-actions, .ayah-actions button.marked-read, .dua-footer strong, .hadith-list a) { color: var(--deep); }
+.night-mode :is(.prayer-row, .settings-list button, .ayah-block, .surah-reader-heading, .surah-list-mobile > button, .city-suggestions li + li, .hadith-list a) { border-color: var(--line); }
+.night-mode .sheet-handle { background: var(--line); }
+.night-mode .prayer-check { background: var(--night-raised); border-color: #6d8378; }
+.night-mode .prayer-check.checked { background: #4b7663; color: #e5f4df !important; border-color: #86b598; }
+.night-mode .prayer-sound { color: var(--muted) !important; }
+.night-mode .home-bottom > button { color: #dbb880; }
+.night-mode :is(.mobile-nav button.active, .mobile-nav button:hover, .segment-control button.active, .theme-card button.selected-theme, .city-suggestions li:hover, .city-suggestions li.highlighted, .surah-list-mobile > button:hover, .quran-player-tools button:hover) { background: var(--night-raised); color: var(--deep); }
+.night-mode .mobile-nav button { color: var(--muted); }
+.night-mode .mobile-nav button.active { color: var(--deep); }
+.night-mode .profile-avatar { background: linear-gradient(135deg, #416759, #75624c); border-color: var(--night-raised); color: #e9ddbc; }
+.night-mode .streak-card { background: linear-gradient(120deg, #634b33, #3e6050); border-color: #ffffff20; }
+.night-mode .streak-card p { color: #e7d1b4; }
+.night-mode .flame-bubble { background: #ffffff15; border-color: #ffffff30; }
+.night-mode .calendar-day.is-today { color: #241c12; }
+.night-mode .calendar-day.all-done { background: #344d3f; color: #f6bc79; }
+.night-mode .duas-page { background: linear-gradient(160deg, #284e45, #1b332d 65%, #202822); border-color: var(--line); }
+.night-mode .dua-row small { color: #d7ba87; }
+.night-mode .dhikr-counter { background: linear-gradient(135deg, #384b3c, #29473c); border-color: #5f7c6b; }
+.night-mode .dhikr-counter strong, .night-mode .dhikr-counter span { color: #d9e9d2; }
+.night-mode .masjid-page .mobile-header, .night-mode .map-empty { background: var(--night-raised); color: var(--deep); }
+.night-mode .inline-error { color: #f1c3a7 !important; background: #533b30; }
+.night-mode .quran-player-error { color: #f1bba0; }
+.night-mode .legacy-mobile :is(.bg-white, .bg-gray-50, .bg-indigo-50, .bg-gradient-to-b) { background: var(--night-surface); color: var(--ink); }
+.night-mode .legacy-mobile [class*="border-"] { border-color: var(--line); }
+.night-mode .legacy-mobile :is([class*="text-gray-"], .text-amber-700) { color: var(--muted); }
+.night-mode .legacy-mobile :is(.text-emerald-700, .text-purple-700) { color: var(--deep); }
+.night-mode .legacy-mobile :is(input, select) { background-color: var(--night-raised); color: var(--ink); }
+.night-mode :is(button, a, input, select):focus-visible { outline-color: #b8d9bc; }
+@media (min-width: 768px) { .home-bottom .visitor-count { font-size: 12px; } }
+@media (max-width: 360px) { .day-night-toggle { gap: 5px; padding-inline: 7px; } .day-night-label { display: none; } }
+@media (prefers-reduced-motion: no-preference) { .day-night-track > span { transition: transform .2s; } }
