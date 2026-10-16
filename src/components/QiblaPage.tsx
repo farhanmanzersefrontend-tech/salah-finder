@@ -1,126 +1,101 @@
-import React, { useRef, useState } from "react";
-import useLocation from "../hooks/useLocation";
-import useQiblaDirection, { KAABA } from "../hooks/useQiblaDirection";
-import useCompass from "../hooks/useCompass";
-import archImg from "../assets/qiblaImg.png";
+import { useEffect, useState } from 'react';
+import { ArrowUp, Check, Compass, Crosshair, MapPin, NavigationArrow } from 'phosphor-react';
+import useLocation from '../hooks/useLocation';
+import useQiblaDirection from '../hooks/useQiblaDirection';
+import useCompass from '../hooks/useCompass';
+import { usePrayerStore } from '../store/usePrayerStore';
+import './qibla.css';
 
+function Kaaba() {
+  return <svg viewBox="0 0 80 90" className="qibla-kaaba" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+    <path d="m40 7 29 16v43L40 83 11 66V23Z" fill="currentColor" fillOpacity=".08" />
+    <path d="m11 23 29 17 29-17M40 40v43M11 33l29 17 29-17M11 41l29 17 29-17M11 57l29 17 29-17M20 62v9m10-3v9m20-9v9m10-15v9" />
+    <path d="m48 58 9-5v16l-9 5Z" fill="currentColor" fillOpacity=".25" />
+  </svg>;
+}
 
-const QiblaCompassPage: React.FC = () => {
-    const { coords, error: locError, detecting, requestLocation, setManualCoords } = useLocation();
-    const { compute } = useQiblaDirection();
-    const { deviceHeading, error: compassError, start: startCompass } = useCompass();
+export default function QiblaPage() {
+  const saved = usePrayerStore(state => state.coords);
+  const initial = saved.lat !== null && saved.lon !== null ? { lat: saved.lat, lon: saved.lon } : null;
+  const { coords, accuracy, error: locationError, detecting, requestLocation, setManualCoords } = useLocation(initial);
+  const { compute } = useQiblaDirection();
+  const { deviceHeading, enabled, error: compassError, start, stop } = useCompass();
+  const local = compute(coords);
+  const [verified, setVerified] = useState<{ lat: number; lon: number; bearing: number } | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [apiError, setApiError] = useState(false);
+  const [manualLat, setManualLat] = useState('');
+  const [manualLon, setManualLon] = useState('');
+  const [manualError, setManualError] = useState('');
+  const [mode, setMode] = useState<'live' | 'north'>('live');
+  const lat = coords?.lat;
+  const lon = coords?.lon;
 
-    const [manualLat, setManualLat] = useState<string>("");
-    const [manualLon, setManualLon] = useState<string>("");
-    const [cameraOn, setCameraOn] = useState(false);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    if (lat === undefined || lon === undefined) return;
+    const controller = new AbortController();
+    let active = true;
+    setChecking(true); setApiError(false);
+    fetch(`https://api.aladhan.com/v1/qibla/${lat}/${lon}`, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(10000)]) })
+      .then(async response => {
+        if (!response.ok) throw new Error('Qibla lookup failed');
+        const data = await response.json();
+        const bearing: unknown = data?.data?.direction;
+        if (data?.code !== 200 || typeof bearing !== 'number' || !Number.isFinite(bearing) || bearing < 0 || bearing >= 360) throw new Error('Invalid Qibla direction');
+        if (active) setVerified({ lat, lon, bearing });
+      })
+      .catch(() => { if (active) setApiError(true); })
+      .finally(() => { if (active) setChecking(false); });
+    return () => { active = false; controller.abort(); };
+  }, [lat, lon]);
 
-    const { bearing, distanceKm } = compute(coords);
+  const nearKaaba = local.distanceKm !== null && local.distanceKm < 0.01;
+  const bearing = nearKaaba ? null : verified && verified.lat === lat && verified.lon === lon ? verified.bearing : local.bearing;
+  const liveHeading = mode === 'live' ? deviceHeading : null;
+  const relative = bearing !== null && liveHeading !== null ? ((bearing - liveHeading + 540) % 360) - 180 : null;
+  const aligned = relative !== null && Math.abs(relative) <= 5;
+  const rotation = mode === 'north' ? bearing ?? 0 : relative ?? 0;
+  const status = nearKaaba ? 'You are near the Kaaba' : !coords ? 'Find your Qibla' : aligned ? 'You’re facing Makkah' : relative !== null ? `Turn ${relative > 0 ? 'right' : 'left'} ${Math.round(Math.abs(relative))}°` : mode === 'north' ? 'Direction from north' : 'Enable your compass';
 
-    const arrowRotation = bearing != null && deviceHeading != null ? (bearing - deviceHeading + 360) % 360 : (bearing ?? 0);
-
-    const applyManual = () => {
-        const lat = parseFloat(manualLat);
-        const lon = parseFloat(manualLon);
-        if (Number.isFinite(lat) && Number.isFinite(lon)) {
-            setManualCoords(lat, lon);
-        }
-    };
-
-    const startCamera = async () => {
-        setCameraOn(true);
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                videoRef.current.play().catch(() => {});
-            }
-        } catch (err) {
-            setCameraOn(false);
-        }
-    };
-
-    const stopCamera = () => {
-        setCameraOn(false);
-        if (videoRef.current && videoRef.current.srcObject) {
-            const s = videoRef.current.srcObject as MediaStream;
-            s.getTracks().forEach((t) => t.stop());
-            videoRef.current.srcObject = null;
-        }
-    };
-
-    return (
-        <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-2xl shadow text-center">
-            <h2 className="text-2xl font-semibold mb-2">Qibla Compass</h2>
-            <p className="text-sm text-gray-600 mb-4">Point your device so the arrow faces the Kaaba ({KAABA.lat.toFixed(3)}, {KAABA.lon.toFixed(3)}).</p>
-
-            <div className="flex items-center justify-center">
-                <div className="relative w-56 h-56 rounded-full border-4 border-indigo-200 flex items-center justify-center bg-indigo-50">
-                    <div className="absolute inset-0 rounded-full pointer-events-none" style={{backgroundImage: `url(${archImg})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.18, zIndex: 0}} />
-                    <div className="absolute top-3 left-1/2 transform -translate-x-1/2 text-sm font-semibold z-10">N</div>
-                    <div className="transform transition-transform z-10" style={{ transform: `rotate(${arrowRotation}deg)` }}>
-                        <svg width="48" height="96" viewBox="0 0 48 96" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                            <defs>
-                                <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                                    <feDropShadow dx="0" dy="6" stdDeviation="6" floodColor="#000" floodOpacity="0.15" />
-                                </filter>
-                            </defs>
-                            <g filter="url(#shadow)" transform="translate(0,4)">
-                                <path d="M24 0 L46 56 H30 V92 H18 V56 H2 Z" fill="#ef4444" stroke="#b91c1c" strokeWidth="1" rx="6" />
-                                <circle cx="24" cy="70" r="6" fill="#fff" opacity="0.9" />
-                            </g>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-4">
-                {bearing != null ? (
-                    <>
-                        <div className="text-lg font-medium">Bearing: {bearing.toFixed(1)}°</div>
-                        {distanceKm != null && <div className="text-sm text-gray-500">Distance: {distanceKm.toFixed(1)} km</div>}
-                    </>
-                ) : (
-                    <div className="text-sm text-gray-500">Qibla not set — detect your location to compute bearing.</div>
-                )}
-            </div>
-
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-                <button onClick={requestLocation} className="px-4 py-2 rounded bg-indigo-600 text-white">{detecting ? "Detecting..." : "Detect Location"}</button>
-                <button onClick={() => startCompass()} className="px-4 py-2 rounded border">Enable Compass</button>
-            </div>
-
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <input value={manualLat} onChange={(e) => setManualLat(e.target.value)} placeholder="Latitude" className="p-2 border rounded" />
-                <input value={manualLon} onChange={(e) => setManualLon(e.target.value)} placeholder="Longitude" className="p-2 border rounded" />
-                <button onClick={applyManual} className="col-span-1 sm:col-span-2 px-4 py-2 rounded bg-green-600 text-white">Apply Manual Location</button>
-            </div>
-
-            <div className="mt-4">
-                <button onClick={cameraOn ? stopCamera : startCamera} className="px-4 py-2 rounded border">{cameraOn ? "Stop Camera" : "Camera Background"}</button>
-                {locError && <div className="mt-2 text-sm text-red-500">{locError}</div>}
-                {compassError && <div className="mt-2 text-sm text-red-500">{compassError}</div>}
-            </div>
-
-            <div style={{ display: cameraOn ? "block" : "none" }} className="mt-4">
-                <video ref={videoRef} className="w-full rounded" playsInline muted />
-            </div>
-
-            <div className="mt-6 text-left prose prose-sm prose-indigo">
-                <h3>How Qibla Finder works</h3>
-                <p>
-                    We compute the most direct great-circle bearing from your current location to the Kaaba using standard spherical
-                    formulas (bearing and haversine distance). The compass uses your device orientation to rotate the arrow live.
-                </p>
-
-                <h4>Permissions & privacy</h4>
-                <p>
-                    Location and device orientation are requested only to compute and display the Qibla direction locally in your
-                    browser. We do not store or transmit your location.
-                </p>
-            </div>
-        </div>
-    );
-};
-
-export default QiblaCompassPage;
+  return <section className={`qibla-experience${aligned ? ' is-aligned' : ''}`} aria-label="Qibla finder">
+    <div className="qibla-pattern" aria-hidden="true" />
+    <p className="qibla-eyebrow">A direction. A connection.</p>
+    <div className="qibla-mode" aria-label="Compass view">
+      <button type="button" aria-pressed={mode === 'live'} onClick={() => setMode('live')}><Compass size={17} /> Live compass</button>
+      <button type="button" aria-pressed={mode === 'north'} onClick={() => { setMode('north'); stop(); }}><NavigationArrow size={17} /> North-up view</button>
+    </div>
+    <div className={`qibla-dial${bearing === null || (mode === 'live' && relative === null) ? ' awaiting-heading' : ''}`} role="img" aria-label={bearing === null ? 'Set your location for a Qibla bearing' : `Qibla ${bearing.toFixed(1)} degrees clockwise from north${relative !== null ? `, turn ${Math.abs(relative).toFixed(0)} degrees ${relative >= 0 ? 'right' : 'left'}` : ''}`}>
+      <span className="qibla-forward" aria-hidden="true"><ArrowUp size={23} weight="bold" /></span>
+      <div className="qibla-dial-middle" />
+      <div className="qibla-dial-inner" />
+      <div className="qibla-cardinals" style={{ transform: `rotate(${-(liveHeading ?? 0)}deg)` }} aria-hidden="true"><span>N</span><span>E</span><span>S</span><span>W</span></div>
+      {bearing !== null && (mode === 'north' || relative !== null) && <div className="qibla-needle" style={{ transform: `rotate(${rotation}deg)` }} aria-hidden="true"><NavigationArrow size={29} weight="fill" /></div>}
+      <div className="qibla-center"><Kaaba /><span>MAKKAH</span></div>
+    </div>
+    <div className="qibla-status" role="status" aria-live="polite">
+      <h2>{aligned && <Check size={20} aria-hidden="true" />}{status}</h2>
+      <p>{aligned ? 'Approximate alignment · keep your phone flat' : relative !== null ? 'Turn slowly until the arrow points straight ahead.' : mode === 'north' ? 'Align N with north using a trusted compass.' : 'Hold your phone flat, with the top pointing ahead.'}</p>
+    </div>
+    <div className="qibla-readings">
+      <div><span>Qibla bearing</span><strong>{bearing !== null ? `${bearing.toFixed(1)}°` : '—'}</strong><small>Clockwise from north</small></div>
+      <div><span>Distance to Makkah</span><strong>{local.distanceKm !== null ? `${Math.round(local.distanceKm).toLocaleString()} km` : '—'}</strong><small>Great-circle distance</small></div>
+    </div>
+    <div className="qibla-actions">
+      <button type="button" className="primary-button" disabled={detecting} onClick={requestLocation}><Crosshair size={18} />{detecting ? 'Finding your location…' : 'Use my current location'}</button>
+      {mode === 'live' && <button type="button" className="outline-button" onClick={() => void start()}><Compass size={18} />{enabled ? 'Recalibrate compass' : 'Enable live compass'}</button>}
+    </div>
+    {coords && <p className="qibla-location"><MapPin size={13} />{coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}{accuracy !== null ? ` · GPS accuracy ±${Math.round(accuracy)} m` : ' · Selected location'}</p>}
+    {(locationError || compassError) && <p className="inline-error" role="alert">{locationError || compassError}</p>}
+    {checking && <p className="qibla-help" role="status">Checking your Qibla direction…</p>}
+    {apiError && <p className="qibla-help" role="status">Online check unavailable. Showing the direction calculated from your coordinates.</p>}
+    <details className="qibla-details"><summary>Enter coordinates manually</summary>
+      <form onSubmit={event => { event.preventDefault(); const latitude = Number(manualLat); const longitude = Number(manualLon); if (!manualLat.trim() || !manualLon.trim() || !Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) { setManualError('Enter a valid latitude (−90 to 90) and longitude (−180 to 180).'); return; } setManualError(''); setManualCoords(latitude, longitude); }}>
+        <label>Latitude<input type="number" step="any" min={-90} max={90} required placeholder="e.g. 25.2048" value={manualLat} onChange={event => setManualLat(event.target.value)} /></label>
+        <label>Longitude<input type="number" step="any" min={-180} max={180} required placeholder="e.g. 55.2708" value={manualLon} onChange={event => setManualLon(event.target.value)} /></label>
+        <button type="submit" className="outline-button">Use these coordinates</button>
+        {manualError && <p className="inline-error" role="alert">{manualError}</p>}
+      </form>
+    </details>
+    <p className="qibla-help">Keep away from magnets, speakers and metal objects. Phone compass accuracy varies; compare with a trusted compass if the direction seems wrong.</p>
+  </section>;
+}

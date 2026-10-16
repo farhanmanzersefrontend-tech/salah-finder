@@ -1,50 +1,70 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
+
+type CompassEvent = DeviceOrientationEvent & { webkitCompassHeading?: number; webkitCompassAccuracy?: number };
+type OrientationPermission = typeof DeviceOrientationEvent & { requestPermission?: (absolute?: boolean) => Promise<string> };
+const normalize = (angle: number) => ((angle % 360) + 360) % 360;
+
+export function compassHeading(event: CompassEvent, screenAngle = 0): number | null {
+  if (event.beta == null || event.gamma == null || Math.abs(event.beta) > 35 || Math.abs(event.gamma) > 35) return null;
+  if (typeof event.webkitCompassHeading === 'number' && Number.isFinite(event.webkitCompassHeading)) {
+    if (typeof event.webkitCompassAccuracy === 'number' && (event.webkitCompassAccuracy < 0 || event.webkitCompassAccuracy > 20)) return null;
+    return normalize(event.webkitCompassHeading + screenAngle);
+  }
+  if (event.absolute === true && typeof event.alpha === 'number' && Number.isFinite(event.alpha)) return normalize(360 - event.alpha + screenAngle);
+  return null;
+}
 
 export default function useCompass() {
   const [deviceHeading, setDeviceHeading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const onEvent = (e: DeviceOrientationEvent) => {
-    const alpha = e.alpha;
-    if (typeof alpha === "number") {
-      // alpha is rotation around z-axis in degrees (0..360) relative to the device's starting orientation.
-      // We convert to compass heading where 0 = North. Different devices expose different event types; using
-      // alpha with a simple transform is a pragmatic approach for many devices.
-      setDeviceHeading((360 - alpha) % 360);
-    }
-  };
-
-  const start = useCallback(async () => {
-    setError(null);
-    const anyWin = window as any;
-    // On iOS (Safari) DeviceOrientationEvent requires a user gesture permission request.
-    if (anyWin.DeviceOrientationEvent && typeof anyWin.DeviceOrientationEvent.requestPermission === "function") {
-      try {
-        const res = await anyWin.DeviceOrientationEvent.requestPermission();
-        if (res === "granted") window.addEventListener("deviceorientation", onEvent as EventListener);
-        else setError("Device orientation permission denied");
-      } catch (err) {
-        setError("Device orientation permission error");
-      }
-    } else {
-      window.addEventListener("deviceorientation", onEvent as EventListener);
-    }
-  }, []);
-
+  const [enabled, setEnabled] = useState(false);
+  const removeListeners = useRef<(() => void) | null>(null);
+  const generation = useRef(0);
   const stop = useCallback(() => {
-    window.removeEventListener("deviceorientation", onEvent as EventListener);
+    generation.current++;
+    removeListeners.current?.(); removeListeners.current = null;
+    setEnabled(false); setDeviceHeading(null);
   }, []);
-
-  useEffect(() => {
-    // Start listening by default for a simple live compass. Consumers may call start/stop explicitly
-    // if they want to request permission in a user gesture.
-    try {
-      window.addEventListener("deviceorientation", onEvent as EventListener);
-    } catch (err) {
-      /* ignore */
+  const start = useCallback(async () => {
+    stop(); setError(null);
+    const version = generation.current;
+    if (!window.isSecureContext) { setError('The compass needs HTTPS. Open the secure version of this app.'); return; }
+    const orientation = window.DeviceOrientationEvent as OrientationPermission | undefined;
+    if (!orientation) { setError('This device has no supported compass. Use the bearing from north below.'); return; }
+    if (orientation.requestPermission) {
+      try {
+        const result = await orientation.requestPermission(true);
+        if (version !== generation.current) return;
+        if (result !== 'granted') { setError('Motion permission was denied. Allow it in your browser settings and try again.'); return; }
+      } catch { setError('Could not enable the compass. Check motion permissions and try again.'); return; }
     }
-    return () => stop();
+    if (version !== generation.current) return;
+    setEnabled(true);
+    let lastReading = Date.now();
+    let received = false;
+    const onEvent = (event: DeviceOrientationEvent) => {
+      const heading = compassHeading(event as CompassEvent, window.screen.orientation?.angle ?? 0);
+      if (heading === null) {
+        if (!event.absolute && !('webkitCompassHeading' in event)) return;
+        setDeviceHeading(null); setError('Hold your phone flat and move it in a figure eight to calibrate.'); return;
+      }
+      lastReading = Date.now(); received = true;
+      setDeviceHeading(heading); setError(null);
+    };
+    window.addEventListener('deviceorientationabsolute', onEvent as EventListener);
+    window.addEventListener('deviceorientation', onEvent);
+    const timer = window.setInterval(() => {
+      if (Date.now() - lastReading > (received ? 4000 : 8000)) {
+        setDeviceHeading(null);
+        setError('No reliable compass reading. Hold the phone flat, calibrate, or use the bearing from north.');
+      }
+    }, 1000);
+    removeListeners.current = () => {
+      window.removeEventListener('deviceorientationabsolute', onEvent as EventListener);
+      window.removeEventListener('deviceorientation', onEvent);
+      window.clearInterval(timer);
+    };
   }, [stop]);
-
-  return { deviceHeading, error, start, stop } as const;
+  useEffect(() => () => { generation.current++; removeListeners.current?.(); }, []);
+  return { deviceHeading, error, enabled, start, stop } as const;
 }

@@ -889,7 +889,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
           </div>
         )}
         {screen === "qibla" && (
-          <div className="mobile-page legacy-mobile">
+          <div className="mobile-page qibla-page">
             {header("Qibla direction", "profile")}
             <QiblaPage />
           </div>

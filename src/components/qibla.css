@@ -1,0 +1,33 @@
+.qibla-page{max-width:780px;margin:0 auto}
+.qibla-experience{position:relative;isolation:isolate;overflow:hidden;padding:24px 18px;border:1px solid #ffffff90;border-radius:30px;background:linear-gradient(155deg,var(--mint),#ffffff88 70%);color:var(--deep);text-align:center}
+.qibla-pattern{position:absolute;z-index:-1;inset:-80px -80px auto;height:310px;opacity:.16;background:repeating-conic-gradient(from 10deg at 50% 0%,transparent 0deg 14deg,var(--teal) 14deg 15deg,transparent 15deg 30deg);mask-image:linear-gradient(#000,transparent)}
+.qibla-experience .qibla-eyebrow{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;margin-bottom:20px;color:var(--teal)}
+.qibla-mode{display:inline-flex;gap:4px;padding:5px;border-radius:18px;background:#ffffff65;max-width:100%}
+.qibla-mode button{display:flex;align-items:center;gap:6px;min-height:40px;padding:8px 10px;border:0;border-radius:13px;background:transparent;font-size:11px;white-space:nowrap}
+.qibla-mode button[aria-pressed=true]{background:var(--deep);color:#fff}
+.qibla-dial{position:relative;width:min(100%,310px);aspect-ratio:1;margin:38px auto 28px;border:1px solid color-mix(in srgb,var(--teal) 22%,transparent);border-radius:50%;background:color-mix(in srgb,var(--teal) 9%,transparent);box-shadow:0 0 0 12px #ffffff20,inset 0 0 40px #ffffff30}
+.qibla-forward{position:absolute;top:-24px;left:calc(50% - 12px);color:var(--deep)}
+.qibla-dial-middle{position:absolute;inset:22px;border:1px solid #ffffff70;border-radius:50%;background:color-mix(in srgb,var(--teal) 8%,transparent)}
+.qibla-dial-inner{position:absolute;inset:46px;border:1px solid #ffffff80;border-radius:50%;background:#ffffff45}
+.qibla-cardinals{position:absolute;inset:30px;border-radius:50%}
+.qibla-cardinals span{position:absolute;font-size:11px;color:var(--teal)}
+.qibla-cardinals span:nth-child(1){top:5px;left:calc(50% - 4px)}.qibla-cardinals span:nth-child(2){right:8px;top:calc(50% - 8px)}.qibla-cardinals span:nth-child(3){bottom:5px;left:calc(50% - 4px)}.qibla-cardinals span:nth-child(4){left:5px;top:calc(50% - 8px)}
+.qibla-needle{position:absolute;inset:0;display:flex;justify-content:center;align-items:flex-start;padding-top:4px;pointer-events:none;color:var(--deep)}
+.qibla-needle svg{transform:rotate(-45deg)}
+.qibla-center{position:absolute;inset:30%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px}
+.qibla-kaaba{width:62px;height:70px;max-width:80%;color:var(--deep)}
+.qibla-center span{font-size:8px;letter-spacing:2px;color:var(--teal)}
+.qibla-status{min-height:75px}.qibla-status h2{display:flex;align-items:center;justify-content:center;gap:7px;font-size:20px;font-weight:500}
+.qibla-status p{font-size:11px;line-height:1.7;color:var(--muted);margin:8px 0 18px}
+.qibla-experience.is-aligned .qibla-dial{box-shadow:0 0 0 12px color-mix(in srgb,var(--teal) 16%,transparent),0 0 40px color-mix(in srgb,var(--teal) 25%,transparent)}
+.qibla-readings{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 20px}
+.qibla-readings>div{display:flex;flex-direction:column;gap:5px;padding:15px 6px;background:#ffffff50;border-radius:18px;border:1px solid #ffffff80}
+.qibla-readings span{font-size:10px;color:var(--muted)}.qibla-readings strong{font-size:23px;font-weight:500}.qibla-readings small{font-size:9px;color:var(--muted)}
+.qibla-actions{display:grid;gap:10px}.qibla-experience .qibla-location{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;font-size:10px;margin-top:16px;color:var(--muted)}
+.qibla-experience .qibla-help{font-size:10px;line-height:1.8;color:var(--muted);margin-top:16px}
+.qibla-details{text-align:left;margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}.qibla-details summary{cursor:pointer;padding:8px 0;font-size:12px}
+.qibla-details form{display:grid;gap:12px;margin-top:10px}.qibla-details label{display:grid;gap:5px;font-size:11px}.qibla-details input{width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#ffffff80;color:var(--ink);font:inherit}
+.night-mode .qibla-experience{background:linear-gradient(155deg,var(--night-raised),var(--night-surface));border-color:var(--line)}
+.night-mode .qibla-mode,.night-mode .qibla-readings>div,.night-mode .qibla-dial-inner,.night-mode .qibla-details input{background:#ffffff06;border-color:var(--line)}
+.night-mode .qibla-mode button[aria-pressed=true]{background:var(--mint);color:var(--deep)}
+@media(min-width:768px){.qibla-experience{padding:32px 50px}.qibla-dial{width:330px}.qibla-actions{grid-template-columns:1fr 1fr}.qibla-mode button{font-size:12px;padding-inline:16px}}

@@ -15,6 +15,7 @@ await build({
       export { default as Quran } from './src/components/mobile/MobileQuran';
       export { default as Juz } from './src/components/mobile/MobileJuz';
       export { default as QuranPlayer } from './src/components/mobile/QuranPlayer';
+      export { default as Qibla } from './src/components/QiblaPage';
       export { getStreak, dayKey } from './src/components/mobile/useJournal';`,
     resolveDir: process.cwd(), loader: 'tsx',
   },
@@ -32,7 +33,10 @@ try {
   const { renderToStaticMarkup } = await import('react-dom/server');
   const { createElement } = await import('react');
   const imported = await import(pathToFileURL(output));
-  const { App, Duas, Quran, Juz, QuranPlayer, dayKey, getStreak } = imported.default;
+  const { App, Duas, Quran, Juz, QuranPlayer, Qibla, dayKey, getStreak } = imported.default;
+  const qiblaHtml = renderToStaticMarkup(createElement(Qibla));
+  assert.ok(qiblaHtml.includes('Find your Qibla'), 'Qibla opens before a location or API response exists');
+  assert.ok(qiblaHtml.includes('Use my current location'));
   const html = renderToStaticMarkup(createElement(App));
   assert.ok(html.includes('class="mobile-app'), 'All devices use the shared app');
   assert.ok(html.includes('Awqat Al-Salah'));
