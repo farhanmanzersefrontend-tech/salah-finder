@@ -19,9 +19,13 @@ async function playPrayer(prayer: PrayerKey, isCurrent = () => true) {
   const audioId = azan.perPrayerAudio?.[prayer] || azan.audioId;
   if (!objectUrlCache[audioId]) {
     const preset = AZAN_PRESETS.find(p => p.id === audioId) || AZAN_PRESETS[0];
+    if (preset.url.startsWith("https://")) {
+      objectUrlCache[audioId] = preset.url;
+    } else {
     const response = await fetch(preset.url);
     if (!response.ok) throw new Error("Failed to download azan");
     objectUrlCache[audioId] = URL.createObjectURL(await response.blob());
+    }
   }
   const state = usePrayerStore.getState();
   const now = prayerWallDate(new Date(), state.timezone);

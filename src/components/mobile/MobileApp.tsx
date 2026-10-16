@@ -17,6 +17,7 @@ import {
   CaretLeft,
   CaretRight,
   GearSix,
+  SlidersHorizontal,
   UserCircle,
   X,
   NavigationArrow,
@@ -35,6 +36,7 @@ import { currentPrayerLocation } from "../../utils/prayerLocation";
 import { stopAzan } from "../../utils/playAzan";
 import { formatHijri } from "../../utils/islamicCalendar";
 import AzanPanel from "../AzanPanel";
+import AzanVoices from "./AzanVoices";
 import QiblaPage from "../QiblaPage";
 import AsmaPage from "../AsmaPage";
 import { Landscape, MosqueScene, Flame } from "./Artwork";
@@ -63,6 +65,7 @@ type Screen =
   | "quran"
   | "profile"
   | "settings"
+  | "manual-times"
   | "themes"
   | "masjid"
   | "qibla"
@@ -377,6 +380,15 @@ export default function MobileApp() {
                 <span className="completed-pill">
                   {done.length}/5 <Check size={12} />
                 </span>
+                <button
+                  type="button"
+                  className="icon-button manual-times-shortcut"
+                  onClick={() => go("manual-times")}
+                  aria-label="Change prayer times manually"
+                  title="Change prayer times manually"
+                >
+                  <SlidersHorizontal size={20} aria-hidden="true" />
+                </button>
               </div>
               {locationError && (
                 <p className="inline-error" role="status">
@@ -630,7 +642,9 @@ export default function MobileApp() {
         )}
         {screen === "dua" && <MobileDuas />}
         {screen === "quran" && <MobileQuran />}
-        {screen === "settings" && <MobileSettings
+        {(screen === "settings" || screen === "manual-times") && <MobileSettings
+          key={screen}
+          initialManual={screen === "manual-times"}
           onReset={resetSettings}
           onBack={() => go("home")}
           onLocation={loadTimes}
@@ -845,6 +859,7 @@ export default function MobileApp() {
         {screen === "alarm" && (
           <div className="mobile-page legacy-mobile">
             {header("Azan & reminders", "profile")}
+            <AzanVoices />
             <AzanPanel />
           </div>
         )}

@@ -5,6 +5,7 @@ type PlayAzanOptions = {
   audioId?: string; // select preset
   ownerId?: string; // optional UI owner id so subscribers can scope which control started playback
   prayer?: string; // optional prayer key when played by scheduler
+  throwOnError?: boolean;
 };
 import fullLocal from "../assets/full-azan.mp3";
 import halfLocal from "../assets/half-azan.mp3";
@@ -12,6 +13,10 @@ import halfLocal from "../assets/half-azan.mp3";
 export const AZAN_PRESETS = [
   { id: "local_full", label: " Full Azan", url: fullLocal },
   { id: "local_half", label: " Half Azan", url: halfLocal },
+  { id: "alafasy", label: "Mishary Rashid Alafasy", url: "https://cdn.aladhan.com/audio/adhans/a9.mp3" },
+  { id: "al_nafees", label: "Ahmad al-Nafees", url: "https://cdn.aladhan.com/audio/adhans/a1.mp3" },
+  { id: "mustafa_ozcan", label: "Hafiz Mustafa Özcan", url: "https://cdn.aladhan.com/audio/adhans/a2.mp3" },
+  { id: "al_zahrani", label: "Mansour Al-Zahrani", url: "https://cdn.aladhan.com/audio/adhans/a11-mansour-al-zahrani.mp3" },
 ];
 
 // cache per-audio-id
@@ -20,6 +25,11 @@ const cachedObjectUrls: Record<string, string | null> = {};
 export const prefetchAzan = async (audioId = "adhan1"): Promise<void> => {
   if (cachedObjectUrls[audioId]) return;
   const preset = AZAN_PRESETS.find((p) => p.id === audioId) || AZAN_PRESETS[0];
+  // Stream external recordings directly: the CDN does not expose CORS headers for fetch.
+  if (preset.url.startsWith("https://")) {
+    cachedObjectUrls[audioId] = preset.url;
+    return;
+  }
   const response = await fetch(preset.url);
   if (!response.ok) throw new Error("Failed to download Azan audio");
   const audioBlob = await response.blob();
@@ -93,6 +103,7 @@ export const playAzan = async (opts: PlayAzanOptions = {}) => {
   } catch (error) {
     console.error("Azan play failed:", error);
     stopAzan();
+    if (opts.throwOnError) throw error;
   }
 };
 

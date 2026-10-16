@@ -4,11 +4,11 @@ import { useSaved } from './useJournal';
 import './dhikr.css';
 
 const dhikr = [
-  { arabic: 'سُبْحَانَ اللَّهِ', name: 'SubhanAllah', meaning: 'Glory be to Allah' },
-  { arabic: 'الْحَمْدُ لِلَّهِ', name: 'Alhamdulillah', meaning: 'All praise is due to Allah' },
-  { arabic: 'اللَّهُ أَكْبَرُ', name: 'Allahu Akbar', meaning: 'Allah is the Greatest' },
-  { arabic: 'لَا إِلَٰهَ إِلَّا اللَّهُ', name: 'La ilaha illallah', meaning: 'There is no god but Allah' },
-  { arabic: 'أَسْتَغْفِرُ اللَّهَ', name: 'Astaghfirullah', meaning: 'I seek forgiveness from Allah' },
+  { countIndex: 3, arabic: 'لَا إِلَٰهَ إِلَّا اللَّهُ', name: 'La ilaha illallah', meaning: 'There is no god but Allah' },
+  { countIndex: 0, arabic: 'سُبْحَانَ اللَّهِ', name: 'SubhanAllah', meaning: 'Glory be to Allah' },
+  { countIndex: 1, arabic: 'الْحَمْدُ لِلَّهِ', name: 'Alhamdulillah', meaning: 'All praise is due to Allah' },
+  { countIndex: 2, arabic: 'اللَّهُ أَكْبَرُ', name: 'Allahu Akbar', meaning: 'Allah is the Greatest' },
+  { countIndex: 4, arabic: 'أَسْتَغْفِرُ اللَّهَ', name: 'Astaghfirullah', meaning: 'I seek forgiveness from Allah' },
 ];
 
 const searchable = (value: string) => value.normalize('NFD').replace(/\p{M}|\s/gu, '').toLowerCase();
@@ -21,7 +21,7 @@ export default function MobileDhikr() {
   const sheet = useRef<HTMLDialogElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const current = dhikr[dhikrIndex];
-  const count = counts[dhikrIndex] ?? 0;
+  const count = counts[current.countIndex] ?? 0;
   const matches = dhikr.map((item, index) => ({ ...item, index }))
     .filter(item => searchable(`${item.name} ${item.arabic} ${item.meaning}`).includes(searchable(query)));
 
@@ -40,8 +40,8 @@ export default function MobileDhikr() {
   }, [open]);
 
   const updateCount = (reset = false) => {
-    // Older saved counters contain only the original three entries.
-    setCounts(previous => dhikr.map((_, index) => index === dhikrIndex
+    // Keep saved counters tied to their original dhikr when the list is reordered.
+    setCounts(previous => Array.from({ length: dhikr.length }, (_, index) => index === current.countIndex
       ? reset ? 0 : (previous[index] ?? 0) + 1
       : previous[index] ?? 0));
   };

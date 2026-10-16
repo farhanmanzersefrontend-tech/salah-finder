@@ -30,7 +30,8 @@ type Sheet = keyof typeof sheetTitles;
 const highLatitudeOptions = [{ id: 1, label: "Middle of the night" }, { id: 2, label: "One seventh of the night" }, { id: 3, label: "Angle based" }];
 const offsetLabel = (minutes: number) => minutes === 0 ? "At prayer time" : `${Math.abs(minutes)} min ${minutes < 0 ? "before" : "after"}`;
 
-export default function MobileSettings({ onBack, onLocation, onCalculation, onReset, hijriOffset, onHijriOffset, hijriDate }: {
+export default function MobileSettings({ onBack, onLocation, onCalculation, onReset, hijriOffset, onHijriOffset, hijriDate, initialManual = false }: {
+  initialManual?: boolean;
   onBack: () => void;
   onLocation: (lat: number, lon: number, label: string) => Promise<void>;
   onCalculation: (settings: CalculationSettings) => Promise<void>;
@@ -40,8 +41,8 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
   hijriDate: string;
 }) {
   const store = usePrayerStore();
-  const [page, setPage] = useState<"prayer" | "hijri" | null>(null);
-  const [trail, setTrail] = useState<Sheet[]>([]);
+  const [page, setPage] = useState<"prayer" | "hijri" | null>(initialManual ? "prayer" : null);
+  const [trail, setTrail] = useState<Sheet[]>(initialManual ? ["manual"] : []);
   const sheet = trail[trail.length - 1];
   const [calculation, setCalculation] = useState(store.calculation);
   const [reminders, setReminders] = useState(store.reminders);
