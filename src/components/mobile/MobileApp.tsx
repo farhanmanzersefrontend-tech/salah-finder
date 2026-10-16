@@ -15,6 +15,7 @@ import MobileDuas from './MobileDuas';
 import CitySearch, { cityLabel } from './CitySearch';
 import type { CitySuggestion } from './CitySearch';
 import './mobile.css';
+import './desktop.css';
 
 type Screen = 'home' | 'stats' | 'dua' | 'quran' | 'profile' | 'themes' | 'masjid' | 'qibla' | 'asma' | 'alarm';
 const themeNames = ['Garden of peace', 'Lilac evening', 'Golden hour'];

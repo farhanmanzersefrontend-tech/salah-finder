@@ -1,4 +1,4 @@
-// No browser required: validate the mobile/desktop entry points and saved streak logic.
+// No browser required: validate the shared responsive app and saved streak logic.
 import assert from 'node:assert/strict';
 import { build } from 'esbuild';
 import { mkdir, rm } from 'node:fs/promises';
@@ -21,28 +21,24 @@ await build({
   packages: 'external', loader: { '.css': 'empty', '.png': 'dataurl', '.jpg': 'dataurl', '.mp3': 'dataurl' },
 });
 try {
-  let width = 390;
   const saved = new Map();
   globalThis.localStorage = {
     getItem: key => saved.get(key) ?? null,
     setItem: (key, value) => saved.set(key, value),
     removeItem: key => saved.delete(key),
   };
-  globalThis.window = { matchMedia: () => ({ matches: width <= 767 }) };
+  globalThis.window = {};
   const { renderToStaticMarkup } = await import('react-dom/server');
   const { createElement } = await import('react');
   const imported = await import(pathToFileURL(output));
   const { App, Duas, Quran, Juz, dayKey, getStreak } = imported.default;
-  for (width of [320, 360, 375, 390, 430, 767, 768, 1024, 1440]) {
-    const html = renderToStaticMarkup(createElement(App));
-    assert.equal(html.includes('class="mobile-app'), width <= 767, `Wrong app at ${width}px`);
-    if (width <= 767) {
-      assert.ok(html.includes('Choose your location'));
-      assert.ok(html.includes('Main navigation'));
-      for (const prayer of ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']) assert.ok(html.includes(`Mark ${prayer} complete`));
-      assert.ok(!html.includes('Until Fajr prayer'), 'No fabricated prayer schedule before location is set');
-    }
-  }
+  const html = renderToStaticMarkup(createElement(App));
+  assert.ok(html.includes('class="mobile-app'), 'All devices use the shared app');
+  assert.ok(html.includes('Awqat Al-Salah'));
+  assert.ok(html.includes('Choose your location'));
+  assert.ok(html.includes('Main navigation'));
+  for (const prayer of ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']) assert.ok(html.includes(`Mark ${prayer} complete`));
+  assert.ok(!html.includes('Until Fajr prayer'), 'No fabricated prayer schedule before location is set');
   assert.ok(renderToStaticMarkup(createElement(Duas)).includes('Family &amp; loved ones'));
   assert.ok(renderToStaticMarkup(createElement(Quran)).includes('Loading the surahs'));
   const juzHtml = renderToStaticMarkup(createElement(Juz, { onRead() {} }));
@@ -56,7 +52,7 @@ try {
   assert.equal(getStreak({ '2026-10-16': all, '2026-10-15': ['Fajr'], '2026-10-14': all }, today), 1, 'Partial day breaks streak');
   assert.equal(getStreak({ '2026-10-14': all }, today), 0, 'Missed yesterday resets streak');
   assert.equal(getStreak({ '2026-01-01': all, '2025-12-31': all }, new Date(2026, 0, 1)), 2, 'Streak crosses year boundary');
-  console.log('PASS: mobile/desktop selection at 9 widths, mobile render smoke checks, 30 Juz entries, and 7 date/streak assertions.');
+  console.log('PASS: shared responsive app render smoke checks, 30 Juz entries, and 7 date/streak assertions.');
   console.log('These are render and logic checks, not browser layout or network integration tests.');
 } finally {
   await rm(output, { force: true });

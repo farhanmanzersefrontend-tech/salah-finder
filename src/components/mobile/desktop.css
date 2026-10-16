@@ -1,0 +1,188 @@
+/* The same app, navigation, and saved activity at every screen size. */
+@media (min-width: 768px) {
+  .mobile-app {
+    background-attachment: fixed;
+  }
+
+  .mobile-main {
+    width: min(100%, 1120px);
+    margin: 0 auto;
+    padding: 40px 36px 128px;
+  }
+
+  .mobile-page {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 28px 32px 32px;
+  }
+
+  .page-title h1 { font-size: 32px; }
+  .page-subtitle { font-size: 14px; }
+  .mobile-header h1 { font-size: 24px; }
+  .section-label { font-size: 14px; }
+  .segment-control { max-width: 520px; margin-bottom: 24px; }
+  .segment-control button { min-height: 42px; font-size: 13px; }
+  .primary-button, .outline-button { min-height: 46px; font-size: 13px !important; }
+
+  .mobile-nav {
+    inset: auto auto 24px 50%;
+    transform: translateX(-50%);
+    width: min(620px, calc(100% - 64px));
+    height: 78px;
+    padding: 9px 20px;
+    border: 1px solid #ffffffd9;
+    border-radius: 26px;
+    box-shadow: 0 8px 36px #355d5717;
+  }
+
+  .mobile-nav button { width: 88px; font-size: 11px; }
+  .mobile-nav button:hover { background: #edf4e8; color: var(--deep); }
+
+  .screen-home .mobile-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 24px;
+    align-content: center;
+    align-items: stretch;
+  }
+
+  .home-hero {
+    min-height: 560px;
+    height: 100%;
+    padding: 28px;
+    border-radius: 32px;
+    box-shadow: 0 12px 40px #355d5710;
+    isolation: isolate;
+  }
+
+  .home-topline { margin-bottom: 28px; }
+  .mobile-app .wordmark { font-size: 20px; }
+  .next-prayer-card { padding: 20px 16px; min-height: 135px; }
+  .location-button { font-size: 11px !important; }
+  .location-button span { max-width: 230px; }
+  .next-prayer-tag { font-size: 10px; }
+  .hero-shortcuts { gap: 12px; margin-top: 14px; }
+  .hero-shortcuts button { min-height: 42px; font-size: 12px; }
+  .hero-greeting { top: 320px; left: 30px; }
+  .hero-greeting span { font-size: 25px; }
+  .hero-greeting p { font-size: 13px; }
+
+  .prayer-sheet {
+    margin: 0;
+    padding: 25px;
+    border-radius: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 12px 40px #355d570b;
+  }
+
+  .sheet-handle { display: none; }
+  .today-heading { padding-bottom: 20px; }
+  .today-heading h2 { font-size: 18px; }
+  .today-heading p { font-size: 11px; }
+  .completed-pill { font-size: 12px; padding: 6px 10px; }
+  .prayer-row { min-height: 72px; }
+  .prayer-row .landscape { width: 38px; height: 38px; }
+  .prayer-name { font-size: 14px; min-width: 72px; }
+  .prayer-name small { font-size: 10px; }
+  .prayer-row time { font-size: 13px; }
+  .prayer-check { width: 28px; height: 28px; }
+  .masjid-button { margin-top: 20px; }
+  .home-bottom { grid-column: 1 / -1; padding: 0; }
+  .home-bottom > div { font-size: 12px; }
+  .home-bottom > button { font-size: 12px; }
+
+  .stats-page { max-width: 740px; }
+  .streak-card { min-height: 190px; padding: 28px; }
+  .streak-card h2 { font-size: 48px; }
+  .streak-card p, .small-pill { font-size: 12px; }
+  .flame-bubble { width: 120px; height: 120px; }
+  .stat-pair article { padding: 20px; gap: 14px; }
+  .stat-pair p, .stat-caption { font-size: 11px; }
+  .calendar-title h2 { font-size: 21px; }
+  .prayer-calendar { padding: 20px; }
+  .calendar-grid { gap: 12px; }
+  .calendar-day { width: 36px; height: 36px; font-size: 12px; }
+  .weekday, .prayer-calendar > p { font-size: 11px; }
+  .progress-pair article { padding: 22px; }
+  .progress-pair h3 { font-size: 13px; }
+
+  .duas-page {
+    min-height: 0;
+    border: 1px solid #ffffff70;
+    border-radius: 32px;
+    box-shadow: 0 16px 48px #355d5710;
+  }
+
+  .dua-list, .hadith-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .dua-row { min-height: 82px; }
+  .dua-row strong { font-size: 14px; }
+  .dua-row small { font-size: 11px; }
+  .dua-list > .empty-state { grid-column: 1 / -1; }
+  .hadith-list article { margin: 0; }
+  .dua-detail, .dhikr-panel { max-width: 620px; margin: 24px auto 0; }
+  .dua-detail { padding: 36px; }
+  .dua-translation { font-size: 15px; }
+  .dhikr-choices button { font-size: 12px; }
+  .dua-footer p { font-size: 14px; }
+
+  .quran-page { max-width: 820px; }
+  .continue-reading { max-width: 520px; padding: 20px; }
+  .surah-list-mobile > button { min-height: 78px; padding: 0 12px; border-radius: 12px; }
+  .surah-list-mobile > button:hover { background: #ffffff65; }
+  .surah-list-mobile strong { font-size: 15px; }
+  .surah-list-mobile small { font-size: 11px; }
+  .surah-number { width: 40px; height: 40px; font-size: 15px; }
+  .surah-arabic { font-size: 23px; }
+  .arabic-text { font-size: 32px; }
+  .verse-translation { font-size: 15px; }
+  .ayah-actions, .ayah-actions button { font-size: 12px; }
+  .reading-card strong { font-size: 15px; }
+  .reading-card small, .source-label { font-size: 12px; }
+
+  .screen-profile .mobile-page { max-width: 740px; }
+  .profile-card { padding: 30px; }
+  .settings-list { padding: 8px 22px; }
+  .settings-list button { min-height: 86px; }
+  .settings-list strong { font-size: 15px; }
+  .settings-list small { max-width: 440px; font-size: 12px; }
+  .profile-footer { font-size: 12px; }
+
+  .screen-themes .mobile-page {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .screen-themes .mobile-header, .screen-themes .page-subtitle { grid-column: 1 / -1; margin-bottom: 0 !important; }
+  .theme-card { margin-bottom: 0; }
+  .theme-art { height: 200px; }
+  .theme-card h2 { font-size: 14px; }
+  .theme-card button { font-size: 12px; }
+
+  .masjid-page { border-radius: 30px; overflow: hidden; box-shadow: 0 12px 40px #355d5710; }
+  .map-container { height: 420px; }
+  .masjid-sheet { padding: 28px; }
+  .masjid-sheet p { max-width: 600px; margin-left: auto; margin-right: auto; font-size: 14px; }
+  .masjid-sheet > .primary-button, .masjid-sheet > .outline-button { max-width: 440px; margin-left: auto; margin-right: auto; }
+  .legacy-mobile { max-width: 100%; }
+}
+
+@media (min-width: 768px) and (max-width: 959px) {
+  .mobile-main { padding-left: 24px; padding-right: 24px; }
+  .screen-home .mobile-main { gap: 16px; }
+  .home-hero, .prayer-sheet { padding: 20px 16px; }
+  .mobile-app .wordmark { font-size: 17px; gap: 7px; }
+  .next-prayer-card { padding: 16px 12px; gap: 8px; }
+  .location-button span { max-width: 155px; }
+  .clock-face { width: 54px; height: 54px; }
+  .prayer-row { gap: 9px; }
+  .prayer-name { min-width: 62px; }
+  .today-heading h2 { font-size: 16px; }
+  .dua-row strong { font-size: 12px; }
+}
