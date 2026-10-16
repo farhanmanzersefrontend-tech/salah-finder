@@ -28,6 +28,26 @@
 .hijri-calendar-key { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 6px 2px; color: var(--muted); font-size: 9px; }
 .hijri-calendar-key > span:first-child { display: flex; align-items: center; gap: 5px; }
 .hijri-calendar-key i { width: 8px; height: 8px; border: 1px solid var(--teal); border-radius: 50%; }
+.islamic-calendar { --observance-red: #b73f43; }
+.hijri-day.is-observance strong,.hijri-day.is-observance small,.islamic-calendar .hijri-observance-name { color: var(--observance-red); }
+.hijri-observance-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--observance-red); }
+.hijri-observance-legend { display: flex; align-items: center; gap: 5px; }
+.hijri-calendar-key .hijri-observance-legend i { background: var(--observance-red); border-color: var(--observance-red); }
+.hijri-month-events { padding: 16px 6px 0; margin-top: 16px; border-top: 1px solid var(--line); }
+.hijri-month-events h3 { font-size: 12px; font-weight: 500; color: var(--deep); }
+.hijri-month-events button { display: flex; flex-direction: column; gap: 3px; width: 100%; min-height: 48px; padding: 10px 0; border: 0; background: transparent; text-align: left; }
+.hijri-month-events strong { font-size: 12px; font-weight: 500; color: var(--observance-red); }
+.hijri-month-events span { font-size: 10px; color: var(--muted); }
+.hijri-observances { padding: 20px 16px; margin-top: 20px; border: 1px solid var(--line); border-radius: 24px; background: #ffffffb3; }
+.hijri-observances h2 { font-size: 16px; font-weight: 500; color: var(--deep); }
+.hijri-observances>p { margin-top: 5px; font-size: 11px; color: var(--muted); }
+.hijri-observances button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 68px; padding: 14px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; text-align: left; }
+.hijri-observances button:last-child { border-bottom: 0; }
+.hijri-observances strong { display: block; font-size: 12px; font-weight: 500; color: var(--observance-red); }
+.hijri-observances small { display: block; margin-top: 4px; font-size: 10px; color: var(--muted); }
+.hijri-observances time { max-width: 110px; flex-shrink: 0; color: var(--observance-red); font-size: 11px; text-align: right; }
+.night-mode .islamic-calendar { --observance-red: #f09297; }
+.night-mode .hijri-observances { background: var(--night-surface); }
 .islamic-calendar .hijri-calendar-note { margin-top: 16px; color: var(--muted); text-align: center; font-size: 10px; line-height: 1.8; }
 .night-mode .guide-coming-soon,.night-mode .hijri-date-card,.night-mode .hijri-month-card { background: var(--night-surface); border-color: var(--line); }
 .night-mode .hijri-date-input input { background: var(--night-raised); }
