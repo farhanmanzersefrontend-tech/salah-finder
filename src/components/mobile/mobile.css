@@ -21,3 +21,18 @@
 .city-search-credit{font-size:8px;color:#98a18e;text-align:center;margin:10px 0 0!important}
 .city-search-credit a{text-decoration:underline;text-underline-offset:2px}
 @media(prefers-reduced-motion:no-preference){.mobile-nav button,.prayer-check,.theme-card button{transition:background .2s,color .2s,transform .2s}.mobile-nav button:active,.dhikr-counter:active{transform:scale(.96)}.mobile-page{animation:mobile-enter .25s ease-out}@keyframes mobile-enter{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
+
+/* Dates stay visible below the illustration, above the prayer sheet. */
+.hero-date-strip{position:absolute;bottom:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;min-height:40px;padding:10px 12px;background:#f5f7efed;backdrop-filter:blur(12px);border:1px solid #ffffff80;border-radius:16px;box-shadow:0 3px 12px #203c2e0d;color:#171c1a;font-size:10px;font-weight:600;line-height:1.6;font-variant-numeric:tabular-nums}
+.hero-date-strip time{white-space:nowrap;max-width:100%}
+.hero-date-strip time:last-child{margin-left:auto;text-align:right}
+@media(max-width:767px){.screen-home .prayer-sheet{margin-top:0}}
+
+.home-topline{gap:8px}
+.home-header-actions{position:relative;display:flex;align-items:center;flex-shrink:0}
+.home-header-actions .header-action{width:44px;height:44px;color:#2e514a;border-radius:14px}
+.home-header-actions .header-action:hover{background:#ffffff40}
+.settings-coming-soon{position:absolute;top:calc(100% + 8px);right:0;z-index:5;white-space:nowrap;padding:10px 14px;border:1px solid #ffffffb3;border-radius:14px;background:#f5f7ef;color:#263e35;box-shadow:0 6px 20px #203c2e20;font-size:11px}
+.night-mode .home-header-actions .header-action{color:#f2f3ec}
+.night-mode .settings-coming-soon{background:var(--night-surface);border-color:var(--line);color:var(--ink)}
+@media(max-width:360px){.mobile-app .wordmark{font-size:16px;gap:6px}.mobile-app .wordmark img{width:28px;height:28px}}

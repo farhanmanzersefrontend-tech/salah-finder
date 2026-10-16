@@ -57,6 +57,18 @@ type Screen =
   | "asma"
   | "alarm";
 const themeNames = ["Garden of peace", "Lilac evening", "Golden hour"];
+const gregorianDateFormat = new Intl.DateTimeFormat("en-GB", {
+  weekday: "long",
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+const hijriDateFormat = new Intl.DateTimeFormat("en-GB", {
+  calendar: "islamic-umalqura",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
 function ClockFace({ now }: { now: Date }) {
   return (
@@ -84,6 +96,7 @@ export default function MobileApp() {
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
   const [night, setNight] = useSaved("salah-night-mode", false);
   const visitors = useVisitorCount();
+  const [showSettingsSoon, setShowSettingsSoon] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
   const [busy, setBusy] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -110,6 +123,11 @@ export default function MobileApp() {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
+  useEffect(() => {
+    if (!showSettingsSoon) return;
+    const timer = window.setTimeout(() => setShowSettingsSoon(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showSettingsSoon]);
   useEffect(() => {
     if (showLocation) {
       locationTrigger.current = document.activeElement as HTMLElement;
@@ -247,13 +265,33 @@ export default function MobileApp() {
                   <img src="/favicon.svg" alt="" width="30" height="30" />
                   Awqat Al-Salah
                 </span>
-                <button
-                  className="icon-button glass-button"
-                  onClick={() => go("themes")}
-                  aria-label="Choose theme"
-                >
-                  <Palette size={20} />
-                </button>
+                <div className="home-header-actions">
+                  <button
+                    className="icon-button header-action"
+                    type="button"
+                    onClick={() => setShowSettingsSoon((visible) => !visible)}
+                    aria-label="Settings (coming soon)"
+                    title="Settings (coming soon)"
+                  >
+                    <GearSix size={23} aria-hidden="true" />
+                  </button>
+                  <button
+                    className="icon-button header-action"
+                    type="button"
+                    onClick={() => go("profile")}
+                    aria-label="Open profile menu"
+                    title="Your profile"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                      <path d="M10 5h10M4 12h16M10 19h10" />
+                    </svg>
+                  </button>
+                  {showSettingsSoon && (
+                    <div className="settings-coming-soon" role="status">
+                      Settings coming soon
+                    </div>
+                  )}
+                </div>
               </div>
               <section className="next-prayer-card">
                 <div className="next-prayer-copy">
@@ -298,6 +336,23 @@ export default function MobileApp() {
               <div className="hero-greeting">
                 <span>Find your calm.</span>
                 <p>One prayer at a time.</p>
+              </div>
+              <div className="hero-date-strip">
+                <time dateTime={today} aria-label="Gregorian date">
+                  {gregorianDateFormat.format(now)}
+                </time>
+                <time
+                  dateTime={today}
+                  aria-label="Hijri date"
+                  title="Umm al-Qura calendar"
+                >
+                  {hijriDateFormat
+                    .formatToParts(now)
+                    .filter((part) => part.type !== "era")
+                    .map((part) => part.value)
+                    .join("")
+                    .trim()}
+                </time>
               </div>
             </section>
             <section className="prayer-sheet">

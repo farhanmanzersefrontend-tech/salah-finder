@@ -66,6 +66,7 @@
   .hero-greeting { top: 320px; left: 30px; }
   .hero-greeting span { font-size: 25px; }
   .hero-greeting p { font-size: 13px; }
+  .hero-date-strip { padding: 12px 24px; font-size: 11px; }
 
   .prayer-sheet {
     margin: 0;
