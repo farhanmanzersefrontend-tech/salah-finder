@@ -305,7 +305,7 @@ export default function MobileApp() {
                   </button>
                 </div>
               </div>
-              <section className="next-prayer-card">
+              <section className={`next-prayer-card${hasTimes ? "" : " awaiting-location"}`}>
                 <div className="next-prayer-copy">
                   <button
                     className="location-button"
@@ -845,8 +845,8 @@ export default function MobileApp() {
           </div>
         )}
         {screen === "asma" && (
-          <div className="mobile-page legacy-mobile">
-            {header("Names of Allah", "profile")}
+          <div className="mobile-page asma-page">
+            {header("Asmaul Husna", "profile")}
             <AsmaPage />
           </div>
         )}

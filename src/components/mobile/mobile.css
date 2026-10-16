@@ -26,7 +26,19 @@
 .hero-date-strip{position:absolute;bottom:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;min-height:40px;padding:10px 12px;background:#f5f7efed;backdrop-filter:blur(12px);border:1px solid #ffffff80;border-radius:16px;box-shadow:0 3px 12px #203c2e0d;color:#171c1a;font-size:10px;font-weight:600;line-height:1.6;font-variant-numeric:tabular-nums}
 .hero-date-strip time{white-space:nowrap;max-width:100%}
 .hero-date-strip time:last-child{margin-left:auto;text-align:right}
-@media(max-width:767px){.screen-home .prayer-sheet{margin-top:0}}
+/* Let the greeting follow the card when its location prompt wraps. */
+.screen-home .home-hero{display:flex;flex-direction:column;height:auto}
+.screen-home .home-topline,.screen-home .next-prayer-card,.screen-home .hero-shortcuts{flex-shrink:0}
+.screen-home .hero-greeting{position:static;margin:24px 4px 28px}
+.screen-home .hero-date-strip{position:static;flex-shrink:0;margin-top:auto;margin-inline:-8px}
+.next-prayer-card.awaiting-location h1{font-size:clamp(20px,6vw,26px);line-height:1.25;text-wrap:balance}
+.next-prayer-card .location-button svg{flex-shrink:0}
+.next-prayer-card .next-prayer-tag{max-width:100%;text-align:left}
+.next-prayer-card .next-prayer-tag>span{min-width:0}
+@media(max-width:767px){
+  .screen-home .home-hero{min-height:390px;padding-bottom:12px}
+  .screen-home .prayer-sheet{margin-top:16px;padding-top:16px}
+}
 
 .home-topline{gap:8px}
 .home-header-actions{position:relative;display:flex;align-items:center;flex-shrink:0}

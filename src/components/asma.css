@@ -1,0 +1,85 @@
+.asma-page .mobile-header { margin-bottom: 24px; }
+.asma-page .mobile-header h1 { text-align: center; font-weight: 500; }
+.asma-content { color: var(--ink); }
+
+.asma-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+
+.asma-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 228px;
+  padding: 28px 12px;
+  border: 1px solid #ffffffb3;
+  border-radius: 24px;
+  background: #fffffff5;
+  box-shadow: 0 5px 18px #355d5706;
+  text-align: center;
+}
+
+.asma-card .asma-arabic {
+  margin-bottom: 10px;
+  font-family: 'Noto Naskh Arabic', serif;
+  font-size: 29px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--deep);
+}
+
+.asma-card .asma-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.asma-card .asma-meaning {
+  min-height: 36px;
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.asma-status, .asma-error {
+  text-align: center;
+  color: var(--deep);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.asma-content .asma-status { margin-bottom: 18px; }
+.asma-error { padding: 30px 20px; border-radius: 24px; background: #ffffffa8; }
+.asma-error .outline-button { max-width: 180px; margin: 18px auto 0; }
+.asma-skeleton { gap: 12px; }
+.asma-skeleton span { height: 12px; width: 75%; border-radius: 8px; background: var(--mint); }
+.asma-skeleton span:first-child { height: 30px; width: 50%; }
+.asma-skeleton span:nth-child(3) { width: 85%; }
+
+.night-mode .asma-card, .night-mode .asma-error { background: var(--night-surface); border-color: var(--line); }
+
+@media (min-width: 600px) {
+  .asma-grid { gap: 18px; }
+  .asma-card { min-height: 260px; padding: 32px 18px; border-radius: 28px; }
+  .asma-card .asma-arabic { font-size: 34px; }
+  .asma-card .asma-name { font-size: 16px; }
+  .asma-card .asma-meaning { font-size: 12px; min-height: 40px; }
+}
+
+@media (min-width: 768px) {
+  .asma-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1100px) {
+  .asma-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .asma-card { transition: border-color .2s, background-color .2s; }
+}
