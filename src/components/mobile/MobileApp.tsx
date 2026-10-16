@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alarm,
   ArrowLeft,
@@ -50,6 +50,7 @@ import ProfileGuides from "./ProfileGuides";
 import type { GuideScreen } from "./ProfileGuides";
 import IslamicCalendar from "./IslamicCalendar";
 import PrayerGuide from "./PrayerGuide";
+import WelcomeSplash from "./WelcomeSplash";
 import CitySearch, { cityLabel } from "./CitySearch";
 import type { CitySuggestion } from "./CitySearch";
 import "./mobile.css";
@@ -105,6 +106,14 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
   const [night, setNight] = useSaved("salah-night-mode", false);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    try { return sessionStorage.getItem('salah-welcome-seen') !== '1'; }
+    catch { return true; }
+  });
+  const finishWelcome = useCallback(() => {
+    try { sessionStorage.setItem('salah-welcome-seen', '1'); } catch { /* Continue if storage is unavailable. */ }
+    setShowWelcome(false);
+  }, []);
   const [hijriOffset, setHijriOffset] = useSaved("salah-hijri-offset", 0);
   const visitors = useVisitorCount();
   const [showLocation, navigateLocation, backLocation] = useNavigationState("locationDialog", false);
@@ -275,6 +284,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     <div
       className={`mobile-app theme-${theme} ${night ? "night-mode" : "day-mode"} screen-${screen}`}
     >
+      {showWelcome && !playingPrayer && <WelcomeSplash night={night || theme === 1} onFinish={finishWelcome} />}
       {playingPrayer && <aside className="azan-playing-popup" aria-label="Azan playback controls">
         <div className="azan-playing-heading" role="status">
           <SpeakerHigh size={24} aria-hidden="true" />
