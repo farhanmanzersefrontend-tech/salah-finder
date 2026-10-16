@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowClockwise, ArrowCounterClockwise, CircleNotch, Pause, Play, SpeakerHigh, SpeakerSlash } from 'phosphor-react';
 import { Landscape } from './Artwork';
+import { useSaved } from './useJournal';
+import { QURAN_RECITERS, quranSurahAudio } from '../../utils/quranReciters';
+import type { QuranReciter } from '../../utils/quranReciters';
 import './quran-player.css';
 
 function audioTime(seconds: number) {
@@ -10,6 +13,17 @@ function audioTime(seconds: number) {
 }
 
 export default function QuranPlayer({ surah, name }: { surah: number; name: string }) {
+  const [reciterId, setReciterId] = useSaved('salah-quran-reciter', 'ar.alafasy');
+  const reciter = QURAN_RECITERS.find(item => item.id === reciterId) ?? QURAN_RECITERS[0];
+  return <QuranAudioPlayer key={`${surah}-${reciter.id}`} surah={surah} name={name} reciter={reciter} onReciterChange={setReciterId} />;
+}
+
+function QuranAudioPlayer({ surah, name, reciter, onReciterChange }: {
+  surah: number;
+  name: string;
+  reciter: QuranReciter;
+  onReciterChange: (id: string) => void;
+}) {
   const audio = useRef<HTMLAudioElement>(null);
   const panel = useRef<HTMLElement>(null);
   const mounted = useRef(false);
@@ -22,7 +36,7 @@ export default function QuranPlayer({ surah, name }: { surah: number; name: stri
   const [speed, setSpeed] = useState(1);
   const [error, setError] = useState('');
   const canSeek = Number.isFinite(duration) && duration > 0;
-  const source = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah}.mp3`;
+  const source = quranSurahAudio(reciter, surah);
 
   useEffect(() => {
     mounted.current = true;
@@ -92,11 +106,20 @@ export default function QuranPlayer({ surah, name }: { surah: number; name: stri
       />
       <div className="quran-player-heading">
         <Landscape variant={4}/>
-        <div className="quran-player-title"><strong>{name}</strong><span>Mishary Rashid Alafasy · Surah {surah}</span></div>
+        <div className="quran-player-title">
+          <strong>{name}</strong>
+          <span>Surah {surah}</span>
+        </div>
         <button type="button" className="quran-play-button" onClick={() => void togglePlay()} aria-label={`${playing ? 'Pause' : 'Play'} ${name}`}>
           {loading ? <CircleNotch size={24} className="quran-player-spinner"/> : playing ? <Pause size={22} weight="fill"/> : <Play size={22} weight="fill"/>}
         </button>
       </div>
+      <label className="quran-reciter-field">
+        <span className="quran-reciter-heading"><strong>Choose reciter</strong><small>{QURAN_RECITERS.length} voices available</small></span>
+        <select className="quran-reciter-select" title="Choose a Quran reciter" value={reciter.id} onChange={event => onReciterChange(event.target.value)}>
+          {QURAN_RECITERS.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
+      </label>
       <input
         className="quran-seek"
         type="range"
