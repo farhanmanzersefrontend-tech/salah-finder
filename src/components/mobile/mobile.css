@@ -32,7 +32,5 @@
 .home-header-actions{position:relative;display:flex;align-items:center;flex-shrink:0}
 .home-header-actions .header-action{width:44px;height:44px;color:#2e514a;border-radius:14px}
 .home-header-actions .header-action:hover{background:#ffffff40}
-.settings-coming-soon{position:absolute;top:calc(100% + 8px);right:0;z-index:5;white-space:nowrap;padding:10px 14px;border:1px solid #ffffffb3;border-radius:14px;background:#f5f7ef;color:#263e35;box-shadow:0 6px 20px #203c2e20;font-size:11px}
 .night-mode .home-header-actions .header-action{color:#f2f3ec}
-.night-mode .settings-coming-soon{background:var(--night-surface);border-color:var(--line);color:var(--ink)}
 @media(max-width:360px){.mobile-app .wordmark{font-size:16px;gap:6px}.mobile-app .wordmark img{width:28px;height:28px}}

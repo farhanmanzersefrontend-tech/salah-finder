@@ -1,145 +1,104 @@
 import { useEffect, useState } from "react";
-
-import { PRAYER_ORDER, type PrayerKey } from "../utils/prayerNames";
+import type { PrayerKey } from "../utils/prayerNames";
 import { AZAN_PRESETS } from "../utils/playAzan";
 import { usePrayerStore } from "../store/usePrayerStore";
+import { showPrayerNotification } from "../utils/notify";
+import { preferenceEvents, prayerWallDate, quietPeriodActive } from "../utils/prayerPreferences";
 
-// Module-level singletons so hook can be used anywhere but share one audio instance
 let audioEl: HTMLAudioElement | null = null;
 const objectUrlCache: Record<string, string> = {};
 let managerInitialized = false;
-let subscribers: Array<(v: boolean) => void> = [];
-
-const notifyPlaying = (v: boolean) => {
-  subscribers.forEach((cb) => cb(v));
+let subscribers: Array<(playing: boolean) => void> = [];
+const notifyPlaying = (playing: boolean) => subscribers.forEach(cb => cb(playing));
+const stopAudio = () => {
+  if (audioEl) { audioEl.pause(); audioEl.currentTime = 0; }
+  notifyPlaying(false);
 };
-
-const fetchPresetUrl = async (audioId: string) => {
-  if (objectUrlCache[audioId]) return objectUrlCache[audioId];
-  const preset = AZAN_PRESETS.find((p) => p.id === audioId) || AZAN_PRESETS[0];
-  const res = await fetch(preset.url);
-  if (!res.ok) throw new Error("Failed to download azan");
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  objectUrlCache[audioId] = url;
-  return url;
-};
-
-const ensureAudio = () => {
+async function playPrayer(prayer: PrayerKey, isCurrent = () => true) {
+  const { azan } = usePrayerStore.getState();
+  const audioId = azan.perPrayerAudio?.[prayer] || azan.audioId;
+  if (!objectUrlCache[audioId]) {
+    const preset = AZAN_PRESETS.find(p => p.id === audioId) || AZAN_PRESETS[0];
+    const response = await fetch(preset.url);
+    if (!response.ok) throw new Error("Failed to download azan");
+    objectUrlCache[audioId] = URL.createObjectURL(await response.blob());
+  }
+  const state = usePrayerStore.getState();
+  const now = prayerWallDate(new Date(), state.timezone);
+  // Recheck preferences after downloading audio.
+  if (!isCurrent() || !state.azan.perPrayer[prayer] || quietPeriodActive(preferenceEvents(state.timings, now, state.calculation), now, state.silent)) return;
   if (!audioEl) audioEl = new Audio();
-  return audioEl;
-};
+  audioEl.src = objectUrlCache[audioId];
+  audioEl.volume = state.azan.volume;
+  await audioEl.play();
+  notifyPlaying(true);
+  audioEl.onended = () => notifyPlaying(false);
+}
 
 export const useAzan = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-
   useEffect(() => {
-    const sub = (v: boolean) => setIsPlaying(v);
-    subscribers.push(sub);
-    return () => {
-      subscribers = subscribers.filter((s) => s !== sub);
-    };
+    subscribers.push(setIsPlaying);
+    return () => { subscribers = subscribers.filter(cb => cb !== setIsPlaying); };
   }, []);
 
   useEffect(() => {
     if (managerInitialized) return;
     managerInitialized = true;
-
+    let active = true;
+    const inFlight = new Set<string>();
+    const readHistory = (): string[] => {
+      try {
+        const saved = JSON.parse(localStorage.getItem("salah-prayer-events") || "[]");
+        return Array.isArray(saved) ? saved.filter(key => typeof key === "string").slice(-100) : [];
+      } catch { return []; }
+    };
+    const delivered = new Set(readHistory());
+    const remember = (key: string) => {
+      delivered.add(key);
+      while (delivered.size > 100) delivered.delete(delivered.values().next().value!);
+      try { localStorage.setItem("salah-prayer-events", JSON.stringify([...delivered])); } catch { /* In-memory deduplication still works. */ }
+    };
     const tick = async () => {
       try {
         const state = usePrayerStore.getState();
-        const timings = state.timings;
-        const azan = state.azan;
-        if (!azan.autoAzanEnabled) return;
-
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, "0");
-        const mm = String(now.getMinutes()).padStart(2, "0");
-        const ss = now.getSeconds();
-        const hm = `${hh}:${mm}`;
-
-        // exact minute only
-        if (ss !== 0) return;
-
-        for (const prayer of PRAYER_ORDER) {
-          const t = timings[prayer as PrayerKey];
-          if (!t) continue;
-          if (t === hm) {
-            const per = azan.perPrayer || {};
-            if (per[prayer as PrayerKey] === false) continue;
-
-            const dateKey = `${new Date().toISOString().slice(0, 10)}|${prayer}`;
-            const last = localStorage.getItem("last-azan-trigger");
-            if (last === dateKey) continue;
-
-            const audioId = (azan.perPrayerAudio && azan.perPrayerAudio[prayer as PrayerKey]) || azan.audioId;
-            try {
-              const url = await fetchPresetUrl(audioId);
-              const audio = ensureAudio();
-              if (audio.src !== url) audio.src = url;
-              audio.volume = azan.volume ?? 1;
-              await audio.play();
-              notifyPlaying(true);
-              audio.onended = () => notifyPlaying(false);
-              localStorage.setItem("last-azan-trigger", dateKey);
-            } catch (e) {
-              console.warn("Auto azan play failed", e);
-            }
-          }
+        const now = prayerWallDate(new Date(), state.timezone);
+        const events = preferenceEvents(state.timings, now, state.calculation);
+        const quiet = quietPeriodActive(events, now, state.silent);
+        if (quiet !== state.quietActive) {
+          if (quiet) stopAudio();
+          state.setQuietStatus(quiet, state.silent.showMessage ? (quiet ? "Prayer quiet time started. Automatic azan is muted." : "Prayer quiet time ended. Your sound settings are restored.") : "");
+          if (state.silent.vibrate && typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(100);
         }
-      } catch (err) {
-        console.debug("useAzan tick error", err);
-      }
+        for (const event of events) {
+          const rule = state.reminders[event.prayer];
+          const notificationAt = event.at.getTime() + rule.offset * 60000;
+          const reminderKey = `notification|${event.key}`;
+          if (state.azan.notificationsEnabled && rule.enabled && now.getTime() >= notificationAt && now.getTime() < notificationAt + 60000 && !delivered.has(reminderKey)) {
+            const body = rule.offset === 0 ? `It is time for ${event.prayer}.` : `${event.prayer} is at ${event.at.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
+            if (showPrayerNotification(`${event.prayer} prayer`, body, quiet || !state.azan.autoAzanEnabled)) remember(reminderKey);
+          }
+          const soundKey = `audio|${event.key}`;
+          if (!state.azan.autoAzanEnabled || !state.azan.perPrayer[event.soundPrayer] || delivered.has(soundKey) || inFlight.has(soundKey)) continue;
+          if (now.getTime() < event.at.getTime() || now.getTime() >= event.at.getTime() + 60000) continue;
+          if (quiet) { remember(soundKey); continue; }
+          inFlight.add(soundKey);
+          // Mark before awaiting to prevent overlapping ticks from replaying audio.
+          remember(soundKey);
+          try { await playPrayer(event.soundPrayer, () => active && usePrayerStore.getState().azan.autoAzanEnabled); }
+          catch (error) { console.warn("Auto azan play failed", error); }
+          finally { inFlight.delete(soundKey); }
+        }
+      } catch (error) { console.debug("Prayer scheduler error", error); }
     };
-
-    const iv = window.setInterval(tick, 1000);
-    const midnightCheck = window.setInterval(() => {
-      const last = localStorage.getItem("last-azan-trigger");
-      if (!last) return;
-      const [date] = last.split("|");
-      const today = new Date().toISOString().slice(0, 10);
-      if (date !== today) localStorage.removeItem("last-azan-trigger");
-    }, 60_000);
-
-    return () => {
-      window.clearInterval(iv);
-      window.clearInterval(midnightCheck);
-    };
+    const timer = window.setInterval(tick, 1000);
+    return () => { active = false; window.clearInterval(timer); managerInitialized = false; };
   }, []);
 
-  const playAzanFor = async (prayerName: string) => {
-    const state = usePrayerStore.getState();
-    const azan = state.azan;
-    const audioId = (azan.perPrayerAudio && azan.perPrayerAudio[prayerName as PrayerKey]) || azan.audioId;
-    try {
-      const url = await fetchPresetUrl(audioId);
-      const audio = ensureAudio();
-      if (audio.src !== url) audio.src = url;
-      audio.volume = azan.volume ?? 1;
-      await audio.play();
-      notifyPlaying(true);
-      audio.onended = () => notifyPlaying(false);
-    } catch (e) {
-      console.warn("Play azan failed", e);
-    }
-  };
-
-  const stopAzan = () => {
-    if (!audioEl) return;
-    try {
-      audioEl.pause();
-      audioEl.currentTime = 0;
-    } catch (err) {
-      console.debug("stopAzan error", err);
-    }
-    notifyPlaying(false);
-  };
-
   return {
-    playAzan: playAzanFor,
-    stopAzan,
+    playAzan: (prayer: string) => playPrayer(prayer as PrayerKey),
+    stopAzan: stopAudio,
     isPlaying,
   } as const;
 };
-
 export default useAzan;

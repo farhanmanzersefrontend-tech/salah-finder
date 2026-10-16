@@ -17,7 +17,7 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
   }
 };
 
-export const showPrayerNotification = (title: string, body: string) => {
+export const showPrayerNotification = (title: string, body: string, silent = false) => {
   if (!isNotificationSupported()) return null;
   if (Notification.permission !== "granted") return null;
 
@@ -26,6 +26,7 @@ export const showPrayerNotification = (title: string, body: string) => {
       body,
       icon: "/icon-192.png",
       tag: "prayer-azan",
+      silent,
     });
   } catch {
     return null;

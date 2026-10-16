@@ -26,10 +26,12 @@ import {
   Sun,
   Users,
 } from "phosphor-react";
-import { usePrayerStore } from "../../store/usePrayerStore";
-import type { PrayerTimings } from "../../store/usePrayerStore";
+import { CALCULATION_METHODS, usePrayerStore } from "../../store/usePrayerStore";
+import type { CalculationSettings, PrayerTimings } from "../../store/usePrayerStore";
 import { PRAYER_ORDER } from "../../utils/prayerNames";
 import { getNextPrayer } from "../../utils/azanScheduler";
+import { adjustPrayerTimes, prayerWallDate, timeMinutes, validateCalculation } from "../../utils/prayerPreferences";
+import { currentPrayerLocation } from "../../utils/prayerLocation";
 import AzanPanel from "../AzanPanel";
 import QiblaPage from "../QiblaPage";
 import AsmaPage from "../AsmaPage";
@@ -38,6 +40,7 @@ import { dayKey, getStreak, useSaved } from "./useJournal";
 import type { Journal } from "./useJournal";
 import MobileQuran from "./MobileQuran";
 import MobileDuas from "./MobileDuas";
+import MobileSettings from "./MobileSettings";
 import CitySearch, { cityLabel } from "./CitySearch";
 import type { CitySuggestion } from "./CitySearch";
 import "./mobile.css";
@@ -51,6 +54,7 @@ type Screen =
   | "dua"
   | "quran"
   | "profile"
+  | "settings"
   | "themes"
   | "masjid"
   | "qibla"
@@ -95,8 +99,8 @@ export default function MobileApp() {
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
   const [night, setNight] = useSaved("salah-night-mode", false);
+  const [hijriOffset, setHijriOffset] = useSaved("salah-hijri-offset", 0);
   const visitors = useVisitorCount();
-  const [showSettingsSoon, setShowSettingsSoon] = useState(false);
   const [showLocation, setShowLocation] = useState(false);
   const [busy, setBusy] = useState(false);
   const [locationError, setLocationError] = useState("");
@@ -105,15 +109,23 @@ export default function MobileApp() {
   const store = usePrayerStore();
   const locationDialog = useRef<HTMLDialogElement>(null);
   const locationTrigger = useRef<HTMLElement | null>(null);
+  const timesRequest = useRef<AbortController | null>(null);
   const today = dayKey(now);
+  const prayerNow = prayerWallDate(now, store.timezone);
+  const prayerToday = dayKey(prayerNow);
+  const adjustedHijriDate = new Date(now);
+  adjustedHijriDate.setDate(adjustedHijriDate.getDate() + hijriOffset);
+  const hijriDate = hijriDateFormat.formatToParts(adjustedHijriDate)
+    .filter((part) => part.type !== "era")
+    .map((part) => part.value).join("").trim();
   const done = journal[today] || [];
   const streak = getStreak(journal, now);
   const hasTimes = PRAYER_ORDER.every((p) =>
     /^\d{2}:\d{2}/.test(store.timings[p]),
   );
-  const next = hasTimes ? getNextPrayer(store.timings, now) : null;
+  const next = hasTimes ? getNextPrayer(store.timings, prayerNow) : null;
   const minutes = next
-    ? Math.max(0, Math.ceil((next.at.getTime() - now.getTime()) / 60000))
+    ? Math.max(0, Math.ceil((next.at.getTime() - prayerNow.getTime()) / 60000))
     : 0;
   const go = (target: Screen) => {
     setScreen(target);
@@ -124,11 +136,6 @@ export default function MobileApp() {
     return () => clearInterval(timer);
   }, []);
   useEffect(() => {
-    if (!showSettingsSoon) return;
-    const timer = window.setTimeout(() => setShowSettingsSoon(false), 3000);
-    return () => clearTimeout(timer);
-  }, [showSettingsSoon]);
-  useEffect(() => {
     if (showLocation) {
       locationTrigger.current = document.activeElement as HTMLElement;
       locationDialog.current?.showModal();
@@ -138,29 +145,43 @@ export default function MobileApp() {
     }
   }, [showLocation]);
 
-  async function loadTimes(lat: number, lon: number, label: string) {
+  async function loadTimes(lat: number, lon: number, label: string, calculation = usePrayerStore.getState().calculation) {
+    validateCalculation(calculation);
+    timesRequest.current?.abort();
+    const controller = new AbortController();
+    timesRequest.current = controller;
     const response = await fetch(
-      `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=3&school=0`,
+      `https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=${calculation.method}&school=${calculation.school}&latitudeAdjustmentMethod=${calculation.highLatitude}`,
+      { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) },
     );
     if (!response.ok)
       throw new Error("Prayer times are unavailable. Please try again.");
     const data = await response.json();
-    const timings = Object.fromEntries(
+    const raw = Object.fromEntries(
       PRAYER_ORDER.map((p) => [p, data.data?.timings?.[p]?.slice(0, 5)]),
     ) as PrayerTimings;
-    if (!PRAYER_ORDER.every((p) => /^\d{2}:\d{2}$/.test(timings[p] || "")))
+    if (!PRAYER_ORDER.every((p) => Number.isFinite(timeMinutes(raw[p] || ""))))
       throw new Error("Unable to load prayer times. Please try again.");
-    store.setTimings(timings);
-    store.setCoords({ lat, lon });
-    store.setLocation(label);
-    localStorage.setItem("salah-times-date", dayKey());
+    if (controller.signal.aborted) throw new Error("A newer location request is in progress.");
+    const timezone = data.data?.meta?.timezone || "";
+    const date = prayerWallDate(new Date(), timezone);
+    const timings = adjustPrayerTimes(raw, calculation, Number(data.data?.date?.hijri?.month?.number) === 9, date.getDay() === 5);
+    usePrayerStore.setState({ timings, coords: { lat, lon }, location: label, calculation, timezone });
+    localStorage.setItem("salah-times-date", dayKey(date));
+  }
+
+  async function saveCalculation(calculation: CalculationSettings) {
+    validateCalculation(calculation);
+    if (store.coords.lat !== null && store.coords.lon !== null) {
+      await loadTimes(store.coords.lat, store.coords.lon, store.location, calculation);
+    } else store.setCalculation(calculation);
   }
   // Refresh the selected location each day so saved timings never silently become yesterday's schedule.
   useEffect(() => {
     if (
       store.coords.lat === null ||
       store.coords.lon === null ||
-      localStorage.getItem("salah-times-date") === today
+      localStorage.getItem("salah-times-date") === prayerToday
     )
       return;
     let active = true;
@@ -175,7 +196,7 @@ export default function MobileApp() {
     };
     // Coordinates and the local date are the refresh triggers.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.coords.lat, store.coords.lon, today]);
+  }, [store.coords.lat, store.coords.lon, prayerToday]);
 
   async function selectCity(city: CitySuggestion) {
     setBusy(true);
@@ -191,33 +212,16 @@ export default function MobileApp() {
       setBusy(false);
     }
   }
-  function detectLocation() {
-    if (!navigator.geolocation) {
-      setLocationError("Location is unavailable. Search for your city below.");
-      return;
-    }
+  async function detectLocation() {
     setBusy(true);
     setLocationError("");
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          await loadTimes(latitude, longitude, "Current location");
-          setShowLocation(false);
-        } catch {
-          setLocationError("Could not load prayer times. Please try again.");
-        } finally {
-          setBusy(false);
-        }
-      },
-      () => {
-        setBusy(false);
-        setLocationError(
-          "Location access was unavailable. You can search for your city instead.",
-        );
-      },
-      { timeout: 10000 },
-    );
+    try {
+      const { lat, lon, label } = await currentPrayerLocation(store.locationPreferences);
+      await loadTimes(lat, lon, label);
+      setShowLocation(false);
+    } catch (error) {
+      setLocationError(error instanceof Error ? error.message : "Could not load prayer times. Please try again.");
+    } finally { setBusy(false); }
   }
   const header = (title: string, back: Screen = "home") => (
     <header className="mobile-header">
@@ -269,9 +273,9 @@ export default function MobileApp() {
                   <button
                     className="icon-button header-action"
                     type="button"
-                    onClick={() => setShowSettingsSoon((visible) => !visible)}
-                    aria-label="Settings (coming soon)"
-                    title="Settings (coming soon)"
+                    onClick={() => go("settings")}
+                    aria-label="Settings"
+                    title="Settings"
                   >
                     <GearSix size={23} aria-hidden="true" />
                   </button>
@@ -286,11 +290,6 @@ export default function MobileApp() {
                       <path d="M10 5h10M4 12h16M10 19h10" />
                     </svg>
                   </button>
-                  {showSettingsSoon && (
-                    <div className="settings-coming-soon" role="status">
-                      Settings coming soon
-                    </div>
-                  )}
                 </div>
               </div>
               <section className="next-prayer-card">
@@ -346,12 +345,7 @@ export default function MobileApp() {
                   aria-label="Hijri date"
                   title="Umm al-Qura calendar"
                 >
-                  {hijriDateFormat
-                    .formatToParts(now)
-                    .filter((part) => part.type !== "era")
-                    .map((part) => part.value)
-                    .join("")
-                    .trim()}
+                  {hijriDate}
                 </time>
               </div>
             </section>
@@ -388,7 +382,7 @@ export default function MobileApp() {
                   >
                     <Landscape variant={index} />
                     <span className="prayer-name">
-                      {prayer}
+                      {prayer === "Dhuhr" && prayerNow.getDay() === 5 && store.calculation.jumuahEnabled ? "Jumuah" : prayer}
                       {next?.prayer === prayer && <small>Next prayer</small>}
                     </span>
                     <time>{store.timings[prayer] || "— — : — —"}</time>
@@ -627,6 +621,14 @@ export default function MobileApp() {
         )}
         {screen === "dua" && <MobileDuas />}
         {screen === "quran" && <MobileQuran />}
+        {screen === "settings" && <MobileSettings
+          onBack={() => go("home")}
+          onLocation={loadTimes}
+          onCalculation={saveCalculation}
+          hijriOffset={hijriOffset}
+          onHijriOffset={setHijriOffset}
+          hijriDate={hijriDate}
+        />}
         {screen === "themes" && (
           <div className="mobile-page">
             {header("Theme", "profile")}
@@ -697,6 +699,12 @@ export default function MobileApp() {
             <h2 className="section-label">Make it yours</h2>
             <div className="settings-list">
               {[
+                {
+                  title: "Settings",
+                  sub: "Prayer times, reminders & calendar",
+                  icon: GearSix,
+                  page: "settings",
+                },
                 {
                   title: "Appearance",
                   sub: themeNames[theme],
@@ -828,6 +836,10 @@ export default function MobileApp() {
           </div>
         )}
       </main>
+      {store.quietMessage && <div className="quiet-status-toast" role="status">
+        <SpeakerSlash size={19} /><span>{store.quietMessage}</span>
+        <button className="icon-button" aria-label="Dismiss silent mode message" onClick={() => store.setQuietStatus(store.quietActive, "")}><X size={18} /></button>
+      </div>}
       <nav className="mobile-nav" aria-label="Main navigation">
         {nav.map((item) => (
           <button
@@ -880,7 +892,8 @@ export default function MobileApp() {
           </p>
         )}
         <p className="location-method">
-          <GearSix size={13} /> Karachi method · Shafi Asr
+          <GearSix size={13} /> {CALCULATION_METHODS.find((method) => method.id === store.calculation.method)?.label}
+          {" · "}{store.calculation.school === 1 ? "Hanafi" : "Standard"} Asr
         </p>
       </dialog>
     </div>
