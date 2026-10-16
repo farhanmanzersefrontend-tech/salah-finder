@@ -31,8 +31,9 @@ type Sheet = keyof typeof sheetTitles;
 const highLatitudeOptions = [{ id: 1, label: "Middle of the night" }, { id: 2, label: "One seventh of the night" }, { id: 3, label: "Angle based" }];
 const offsetLabel = (minutes: number) => minutes === 0 ? "At prayer time" : `${Math.abs(minutes)} min ${minutes < 0 ? "before" : "after"}`;
 
-export default function MobileSettings({ onBack, onLocation, onCalculation, onReset, hijriOffset, onHijriOffset, hijriDate, initialManual = false }: {
+export default function MobileSettings({ onBack, onLocation, onCalculation, onReset, hijriOffset, onHijriOffset, hijriDate, initialManual = false, initialNotifications = false }: {
   initialManual?: boolean;
+  initialNotifications?: boolean;
   onBack: () => void;
   onLocation: (lat: number, lon: number, label: string) => Promise<void>;
   onCalculation: (settings: CalculationSettings) => Promise<void>;
@@ -44,7 +45,7 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
   const store = usePrayerStore();
   const [route, navigate, backRoute] = useNavigationState<{ page: "prayer" | "hijri" | null; trail: Sheet[] }>("settings", {
     page: initialManual ? "prayer" : null,
-    trail: initialManual ? ["manual"] : [],
+    trail: initialManual ? ["manual"] : initialNotifications ? ["notifications"] : [],
   });
   const { page, trail } = route;
   const setPage = (page: "prayer" | "hijri" | null) => navigate(previous => ({ ...previous, page }));
@@ -154,7 +155,11 @@ export default function MobileSettings({ onBack, onLocation, onCalculation, onRe
       {sheet === "daylight" && calculationForm(<><p className="settings-hint">Local prayer times already include daylight saving. Apply an extra hour only if your timetable needs it.</p><label className="settings-field">Time adjustment<select value={calculation.daylightOffset} onChange={e => setCalculation({ ...calculation, daylightOffset: Number(e.target.value) })}><option value={0}>Automatic (no extra adjustment)</option><option value={60}>Add one hour (+60 minutes)</option><option value={-60}>Subtract one hour (-60 minutes)</option></select></label></>)}
       {sheet === "jumuah" && calculationForm(<><SettingToggle title="Custom Jumuah time" description="Replace Dhuhr on Fridays with your congregation time." checked={calculation.jumuahEnabled} onChange={enabled => setCalculation({ ...calculation, jumuahEnabled: enabled })} /><label className="settings-field settings-spaced">Friday prayer time<input type="time" required value={calculation.jumuahTime} onChange={e => setCalculation({ ...calculation, jumuahTime: e.target.value })} disabled={!calculation.jumuahEnabled} /></label><p className="settings-hint">Enter the final local time. Manual and daylight adjustments are not added to this time.</p></>)}
       {sheet === "manual" && calculationForm(<>
-        <div className="settings-notice"><strong>Before you adjust</strong><p>Check your calculation method and location first. Use your local mosque's timetable as a reference.</p></div>
+        <div className="settings-notice">
+          <strong>How to adjust your azan time</strong>
+          <p>Enter <b>5</b> for 5 minutes later or <b>−5</b> for 5 minutes earlier. Keep <b>0</b> for no change, then tap <b>Save settings</b>.</p>
+          <p lang="ur" dir="rtl">اذان ۵ منٹ بعد کے لیے <b dir="ltr">5</b> اور ۵ منٹ پہلے کے لیے <b dir="ltr">−5</b> درج کریں۔ وقت نہ بدلنا ہو تو <b>0</b> رہنے دیں، پھر <b>Save settings</b> دبائیں۔</p>
+        </div>
         <h3 className="settings-group-title">Adjustments</h3>
         {PRAYER_ORDER.map(prayer => <MinuteField key={prayer} title={`${prayer} time`} value={calculation.adjustments[prayer]} onChange={value => setCalculation({ ...calculation, adjustments: { ...calculation.adjustments, [prayer]: value } })} />)}
         <button type="button" className="outline-button settings-spaced" onClick={() => setCalculation({ ...calculation, adjustments: { ...DEFAULT_CALCULATION.adjustments } })}>Reset all manual adjustments</button>

@@ -47,7 +47,6 @@
 .night-mode .home-header-actions .header-action{color:#f2f3ec}
 @media(max-width:360px){.mobile-app .wordmark{font-size:16px;gap:6px}.mobile-app .wordmark img{width:28px;height:28px}}
 
-.manual-times-shortcut{width:36px;height:36px;background:var(--mint);color:var(--teal)!important}
 .azan-settings-cta{margin-top:16px;margin-bottom:12px;border-color:var(--teal);background:var(--mint)}
 .azan-settings-cta svg:last-child{margin-left:auto}
 .azan-playing-popup{position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:100;width:calc(100% - 32px);max-width:430px;padding:20px;border:1px solid var(--teal);border-radius:24px;background:#f9fcf3;box-shadow:0 15px 60px #193a3950;color:var(--deep)}

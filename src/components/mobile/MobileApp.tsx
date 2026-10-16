@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alarm,
+  Bell,
   ArrowLeft,
   ArrowRight,
   BookOpen,
@@ -68,6 +69,7 @@ type Screen =
   | "profile"
   | "settings"
   | "manual-times"
+  | "notification-settings"
   | "themes"
   | "masjid"
   | "qibla"
@@ -402,15 +404,6 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                 <span className="completed-pill">
                   {done.length}/5 <Check size={12} />
                 </span>
-                <button
-                  type="button"
-                  className="icon-button manual-times-shortcut"
-                  onClick={() => go("manual-times")}
-                  aria-label="Change prayer times manually"
-                  title="Change prayer times manually"
-                >
-                  <SlidersHorizontal size={20} aria-hidden="true" />
-                </button>
               </div>
               {locationError && (
                 <p className="inline-error" role="status">
@@ -672,9 +665,10 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
         )}
         {screen === "dua" && <MobileDuas />}
         {screen === "quran" && <MobileQuran />}
-        {(screen === "settings" || screen === "manual-times") && <MobileSettings
+        {(screen === "settings" || screen === "manual-times" || screen === "notification-settings") && <MobileSettings
           key={screen}
           initialManual={screen === "manual-times"}
+          initialNotifications={screen === "notification-settings"}
           onReset={resetSettings}
           onBack={() => goBack()}
           onLocation={loadTimes}
@@ -884,6 +878,22 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
         {screen === "alarm" && (
           <div className="mobile-page legacy-mobile">
             {header("Azan & reminders", "profile")}
+            <button
+              type="button"
+              className="outline-button azan-settings-cta"
+              onClick={() => go("manual-times")}
+            >
+              <SlidersHorizontal size={20} aria-hidden="true" /> Manual prayer-time adjustments
+              <CaretRight size={16} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="outline-button azan-settings-cta"
+              onClick={() => go("notification-settings")}
+            >
+              <Bell size={20} aria-hidden="true" /> Notification settings
+              <CaretRight size={16} aria-hidden="true" />
+            </button>
             <AzanVoices />
             <AzanPanel />
           </div>
