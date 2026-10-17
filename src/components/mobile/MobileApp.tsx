@@ -41,11 +41,12 @@ import AzanPanel from "../AzanPanel";
 import AzanVoices from "./AzanVoices";
 import QiblaPage from "../QiblaPage";
 import AsmaPage from "../AsmaPage";
-import { Landscape, MosqueScene, Flame } from "./Artwork";
+import { Landscape, MosqueScene } from "./Artwork";
 import { dayKey, getStreak, useSaved } from "./useJournal";
 import type { Journal } from "./useJournal";
 import MobileQuran from "./MobileQuran";
 import StreakGoals from "./StreakGoals";
+import StatisticsStreaks from "./StatisticsStreaks";
 import { dailyHadithNumbers, hadithDay } from "../../utils/dailyHadith";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
@@ -564,19 +565,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                 </select>
               </label>
             </div>
-            <section className="streak-card">
-              <div>
-                <span className="small-pill">Current streak</span>
-                <h2>
-                  {streak} <span>{streak === 1 ? "day" : "days"}</span>
-                </h2>
-                <p>Small steps, beautiful habits.</p>
-              </div>
-              <div className="flame-bubble">
-                <Flame />
-              </div>
-              <span className="streak-sparkle">✦</span>
-            </section>
+            <StatisticsStreaks quran={quranJournal} hadith={hadithJournal} prayers={journal} now={now} onOpen={() => go("streaks")} />
             <div className="stat-pair">
               <article>
                 <span className="stat-icon mint">
