@@ -38,7 +38,11 @@ Use the sun/moon switch beside **Your space** in Profile. The preference is save
 
 The **Continue with Google** button uses Firebase Authentication for both new and returning users. A signed-in profile shows the Google display name, photo, email, and a Sign out button. Firebase restores the login on subsequent visits. Prayer tracking and reading progress remain stored locally on the device; this change does not add account-based cloud sync.
 
-To enable login:
+The button starts the popup directly from the click. When the browser blocks popups, it falls back to Google's same-tab redirect flow and processes the result on return. For hosting on a domain other than the Firebase auth domain, follow [Firebase's redirect hosting guidance](https://firebase.google.com/docs/auth/web/redirect-best-practices) so browsers that block third-party storage can restore the session.
+
+The supplied public Firebase web configuration for `awqat-al-salah` is built into the app, so local and deployed builds use the same project even without environment variables. The four `VITE_FIREBASE_*` fields can override it; a different project ID requires all four fields.
+
+To configure the Firebase project:
 
 1. Create a project at [Firebase Console](https://console.firebase.google.com/), then register a **Web app** using the `</>` icon in Project settings.
 2. Open **Authentication**, get started, and enable **Google** under **Sign-in method**. Select your support email and save. No email/password provider is needed.
@@ -46,7 +50,7 @@ To enable login:
 4. In **Authentication > Settings > Authorized domains**, add `localhost` for local testing and the domain where the app is hosted. Use HTTPS for production.
 5. Restart Vite after editing `.env.local`. For Vercel, add the same four values as project environment variables and rebuild/redeploy.
 
-Without the Firebase configuration, the Profile button is visible but login cannot complete. A real Google account flow must be tested after configuration; mocked checks cannot verify the consent screen, authorized domain, or account permissions.
+For a different Firebase project, incomplete environment overrides prevent login rather than mixing project settings. A real Google account flow must be tested after configuration; mocked checks cannot verify the consent screen, authorized domain, or account permissions.
 
 Reference: [Firebase Google sign-in guide](https://firebase.google.com/docs/auth/web/google-signin).
 

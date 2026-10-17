@@ -5,7 +5,7 @@ import ts from 'typescript';
 const source = await readFile(new URL('../src/utils/googleAuth.ts', import.meta.url), 'utf8');
 const asModule = code => `data:text/javascript;base64,${Buffer.from(code).toString('base64')}`;
 const appModule = asModule('export const getApps = () => globalThis.authTest.apps; export const initializeApp = (config, name) => { const app = {config, name}; globalThis.authTest.apps.push(app); return app; };');
-const authModule = asModule('export const browserPopupRedirectResolver = {}; export class GoogleAuthProvider { setCustomParameters(value) { this.parameters = value; } } export const signInWithPopup = async (auth, provider, resolver) => { globalThis.authTest.popup = {auth, provider, resolver}; if (globalThis.authTest.popupError) throw globalThis.authTest.popupError; return {user: {uid: "test-user"}}; }; export const browserLocalPersistence = "local"; export const getAuth = app => ({app}); export const setPersistence = async (auth, mode) => { globalThis.authTest.persistence.push(mode); if (globalThis.authTest.fail) { globalThis.authTest.fail = false; throw new Error("Storage failed"); } };');
+const authModule = asModule('export const browserPopupRedirectResolver = {}; export const getRedirectResult = async () => { globalThis.authTest.redirectChecks = (globalThis.authTest.redirectChecks || 0) + 1; return null; }; export const signInWithRedirect = async (auth, provider, resolver) => { globalThis.authTest.redirect = {auth, provider, resolver}; }; export class GoogleAuthProvider { setCustomParameters(value) { this.parameters = value; } } export const signInWithPopup = async (auth, provider, resolver) => { globalThis.authTest.popup = {auth, provider, resolver}; if (globalThis.authTest.popupError) throw globalThis.authTest.popupError; return {user: {uid: "test-user"}}; }; export const browserLocalPersistence = "local"; export const getAuth = app => ({app}); export const setPersistence = async (auth, mode) => { globalThis.authTest.persistence.push(mode); if (globalThis.authTest.fail) { globalThis.authTest.fail = false; throw new Error("Storage failed"); } };');
 async function load(env) {
   const configuredSource = source.replaceAll('import.meta.env', JSON.stringify(env));
   const compiled = ts.transpileModule(configuredSource, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText
@@ -13,7 +13,11 @@ async function load(env) {
     .replace(/import\(['"]firebase\/auth['"]\)/g, `import(${JSON.stringify(authModule)})`);
   return import(asModule(compiled));
 }
-const unavailable = await load({});
+const defaults = await load({});
+assert.equal(defaults.googleAuthConfigured, true, 'Deployments must work without local environment files');
+const emptyValues = await load({ VITE_FIREBASE_API_KEY: '', VITE_FIREBASE_AUTH_DOMAIN: '', VITE_FIREBASE_PROJECT_ID: '', VITE_FIREBASE_APP_ID: '' });
+assert.equal(emptyValues.googleAuthConfigured, true, 'Blank deployment variables should use the public defaults');
+const unavailable = await load({ VITE_FIREBASE_PROJECT_ID: 'another-project' });
 assert.equal(unavailable.googleAuthConfigured, false);
 await assert.rejects(unavailable.getGoogleAuth(), /not available/);
 assert.equal(unavailable.googleAuthError({ code: 'auth/popup-closed-by-user' }), '');
@@ -38,5 +42,23 @@ assert.equal(signedIn.user.uid, 'test-user');
 assert.deepEqual(globalThis.authTest.popup.provider.parameters, { prompt: 'select_account' });
 assert.equal(globalThis.authTest.popup.resolver, first.sdk.browserPopupRedirectResolver);
 globalThis.authTest.popupError = Object.assign(new Error('Popup blocked'), { code: 'auth/popup-blocked' });
-await assert.rejects(configured.handleGoogleSignIn(), { code: 'auth/popup-blocked' });
-console.log('Google popup checks passed: provider, account selection, explicit popup resolver, and errors.');
+await configured.handleGoogleSignIn();
+assert.equal(globalThis.authTest.redirect.auth, first.auth);
+assert.equal(globalThis.authTest.redirect.resolver, first.sdk.browserPopupRedirectResolver);
+assert.equal(globalThis.authTest.redirectChecks, 1);
+globalThis.authTest.redirect = null;
+globalThis.authTest.popupError = Object.assign(new Error('Closed'), { code: 'auth/popup-closed-by-user' });
+await assert.rejects(configured.handleGoogleSignIn(), { code: 'auth/popup-closed-by-user' });
+assert.equal(globalThis.authTest.redirect, null, 'Closing the popup should not force a redirect');
+globalThis.authTest.popupError = null;
+globalThis.authTest.popup = null;
+const pending = configured.handleGoogleSignIn();
+assert.ok(globalThis.authTest.popup, 'The popup must start before yielding the button click');
+await pending;
+console.log('Google popup checks passed: provider, account selection, synchronous popup, blocked-popup redirect, redirect completion, and cancellation.');
+
+globalThis.authTest.apps = [];
+const defaultClient = await defaults.getGoogleAuth();
+assert.equal(defaultClient.auth.app.config.projectId, 'awqat-al-salah');
+assert.equal(defaultClient.auth.app.config.authDomain, 'awqat-al-salah.firebaseapp.com');
+console.log('Deployment config checks passed: no env file, blank values, and incomplete alternate project.');
