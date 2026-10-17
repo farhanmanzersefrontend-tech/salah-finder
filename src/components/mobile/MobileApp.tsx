@@ -40,6 +40,7 @@ import { formatHijri } from "../../utils/islamicCalendar";
 import AzanPanel from "../AzanPanel";
 import AzanVoices from "./AzanVoices";
 import QiblaPage from "../QiblaPage";
+import MosqueFinder from "./MosqueFinder";
 import AsmaPage from "../AsmaPage";
 import { Landscape, MosqueScene } from "./Artwork";
 import { dayKey, getStreak, useSaved } from "./useJournal";
@@ -906,55 +907,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
             <IslamicCalendar today={now} hijriOffset={hijriOffset} />
           </div>
         )}
-        {screen === "masjid" && (
-          <div className="masjid-page">
-            {header("Masjid finder")}
-            <div className="map-container">
-              {store.location ? (
-                <iframe
-                  title="Nearby masjids map"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(`mosques near ${store.coords.lat !== null ? `${store.coords.lat},${store.coords.lon}` : store.location}`)}&output=embed`}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-              ) : (
-                <div className="map-empty">
-                  <MapPin size={50} weight="duotone" />
-                  <span>Your next place of peace</span>
-                </div>
-              )}
-            </div>
-            <section className="masjid-sheet">
-              <span className="setting-icon">
-                <MapPin size={26} />
-              </span>
-              <h2>Find your nearest masjid</h2>
-              <p>
-                {store.location
-                  ? `Explore masjids around ${store.location.split(",").slice(0, 2).join(",")}. Open Maps for current listings, reviews, and directions.`
-                  : "Choose your location to discover masjids nearby and find your way to the next prayer."}
-              </p>
-              <button
-                className="outline-button"
-                onClick={() => setShowLocation(true)}
-              >
-                <MapPin size={16} />
-                {store.location ? "Change location" : "Choose location"}
-              </button>
-              {store.location && (
-                <a
-                  className="primary-button"
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`mosques near ${store.coords.lat},${store.coords.lon}`)}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <NavigationArrow size={17} /> Explore in Google Maps{" "}
-                  <ArrowRight size={16} />
-                </a>
-              )}
-            </section>
-          </div>
-        )}
+        {screen === "masjid" && <MosqueFinder onBack={() => goBack("home")} onChooseLocation={() => setShowLocation(true)} />}
         {screen === "alarm" && (
           <div className="mobile-page legacy-mobile">
             {header("Azan & reminders", "profile")}

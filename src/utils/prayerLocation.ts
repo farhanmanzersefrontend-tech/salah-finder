@@ -6,7 +6,7 @@ function locationFailure(error: Pick<GeolocationPositionError, 'code'>) {
   return new Error('Your phone could not determine its location. Turn on Location/GPS and try again, or search for your city.');
 }
 
-export function requestPrayerPosition(preferences: LocationPreferences, signal?: AbortSignal) {
+export function requestPrayerPosition(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000) {
   return new Promise<GeolocationPosition>((resolve, reject) => {
     let best: GeolocationPosition | undefined;
     let watchId: number | undefined;
@@ -25,7 +25,7 @@ export function requestPrayerPosition(preferences: LocationPreferences, signal?:
     };
     const cancel = () => finish(new DOMException('Location request cancelled', 'AbortError'));
     const timer = setTimeout(() => {
-      if (best && preferences.method === 'gps' && best.coords.accuracy > 1000) finish(new Error('Your location is only approximate. Enable Precise Location for this browser in your phone settings and try again.'));
+      if (best && preferences.method === 'gps' && best.coords.accuracy > maxAccuracyMeters) finish(new Error(`Your location is only approximate (accuracy ±${Math.round(best.coords.accuracy)} m). Enable Precise Location for this browser and try again outdoors or near a window.`));
       else finish();
     }, 20000);
     signal?.addEventListener('abort', cancel, { once: true });
@@ -37,7 +37,7 @@ export function requestPrayerPosition(preferences: LocationPreferences, signal?:
         finish(new Error('Your device returned an invalid location. Please try again.')); return;
       }
       if (!best || accuracy < best.coords.accuracy) best = position;
-      if (preferences.method !== 'gps' || accuracy <= 100 || !navigator.geolocation.watchPosition) finish();
+      if (preferences.method !== 'gps' || accuracy <= Math.min(100, maxAccuracyMeters)) finish();
     };
     const onError = (error: GeolocationPositionError) => {
       if (error.code === 1 || !best) finish(locationFailure(error));
@@ -53,10 +53,10 @@ export function requestPrayerPosition(preferences: LocationPreferences, signal?:
   });
 }
 
-export async function currentPrayerLocation(preferences: LocationPreferences, signal?: AbortSignal) {
+export async function currentPrayerLocation(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000) {
   if (window.isSecureContext === false) throw new Error('Location needs a secure connection. Open this app using HTTPS, or search for your city.');
   if (!navigator.geolocation) throw new Error("Location is unavailable. Search for a city or enter coordinates instead.");
-  const position = await requestPrayerPosition(preferences, signal);
+  const position = await requestPrayerPosition(preferences, signal, maxAccuracyMeters);
   const { latitude: lat, longitude: lon } = position.coords;
   let label = "Current location";
   if (preferences.useInternet) {
