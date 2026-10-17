@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { ArrowLeft, CaretRight, CloudSun, Heart, House, Moon, HandsClapping, Sun, BookOpen, MagnifyingGlass, X } from 'phosphor-react';
 import { useSaved } from './useJournal';
 import MobileDhikr from './MobileDhikr';
@@ -27,6 +27,9 @@ export default function MobileDuas({ hadithJournal, onHadithRead }: { hadithJour
   const setSelected = (value: number | null) => value === null && selected !== null ? backSelected(null) : navigateSelected(value);
   const [favorites, setFavorites] = useSaved<number[]>('salah-favorite-duas', []);
   const current = selected === null ? null : duas[selected];
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [selected, tab, collection]);
   return <div className="mobile-page duas-page"><div className="page-title">{current ? <button className="icon-button" onClick={() => setSelected(null)} aria-label="Back to duas"><ArrowLeft size={21}/></button> : null}<h1>{current ? 'Daily dua' : 'Dua'}</h1>{!current && <button className="icon-button" aria-label={searching ? 'Close search' : 'Search duas'} onClick={() => { setSearching(value => !value); setQuery(''); }}>{searching ? <X size={21}/> : <MagnifyingGlass size={21}/>}</button>}</div>
     {current ? <article className="dua-detail"><div className={`dua-illustration ${current.color}`}><current.icon size={35} weight="duotone"/></div><h2>{current.title}</h2><p className="arabic-text" lang="ar" dir="rtl">{current.arabic}</p><p className="dua-translation">{current.translation}</p><span className="source-label">{current.source}</span><button className="outline-button" aria-pressed={favorites.includes(selected!)} onClick={() => setFavorites(previous => previous.includes(selected!) ? previous.filter(id => id !== selected) : [...previous, selected!])}><Heart size={18} weight={favorites.includes(selected!) ? 'fill' : 'regular'}/>{favorites.includes(selected!) ? 'Saved to favorites' : 'Save this dua'}</button></article> : <>
     <p className="page-subtitle">A remembrance for every moment.</p><div className="segment-control" aria-label="Dua category">{['Dhikr','Daily','Hadith','Saved'].map(t=><button key={t} className={tab === t ? 'active' : ''} onClick={() => { setTab(t); setQuery(''); }} aria-pressed={tab === t}>{t}</button>)}</div>

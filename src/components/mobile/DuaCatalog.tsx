@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { ArrowLeft, BookOpen, CaretRight, CloudSun, Heart, House, Leaf, MagnifyingGlass, AirplaneTilt, HandsClapping, Sun, FirstAid, Users, Star, Sparkle } from 'phosphor-react';
 import { useNavigationState } from '../../hooks/useNavigationState';
 import { loadBilingualTopics, loadBilingualDua } from '../../utils/duaApi';
@@ -33,6 +33,9 @@ export default function DuaCatalog({ savedOnly = false, onExit }: { savedOnly?: 
   const [retry, setRetry] = useState(0);
   const category = categories.find(item => item.id === categoryId);
   const topic = topics.find(item => item.id === topicId);
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [categoryId, topicId, savedOnly]);
 
   useEffect(() => {
     if (savedOnly) return;
