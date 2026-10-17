@@ -17,6 +17,7 @@ export default function MushafReader({ onLoaded, page, onPage, onBack, surahs, r
   const [indexQuery, setIndexQuery] = useState('');
   const [finding, setFinding] = useState(false);
   const lookup = useRef<AbortController | null>(null);
+  const paper = useRef<HTMLElement | null>(null);
   const [saved, setSaved] = useSaved<number[]>('salah-mushaf-bookmarks', []);
   useEffect(() => {
     const controller = new AbortController();
@@ -27,16 +28,16 @@ export default function MushafReader({ onLoaded, page, onPage, onBack, surahs, r
     return () => controller.abort();
   }, [page, retry, onLoaded]);
   useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previous; };
-  }, []);
+    const frame = window.requestAnimationFrame(() => paper.current?.scrollIntoView({ block: 'start', behavior: 'instant' }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [page]);
   useEffect(() => () => lookup.current?.abort(), []);
   const ayahs = content?.page === page ? content.ayahs : [];
   const loading = !ayahs.length && !error;
   const bookmarked = saved.includes(page);
   function go(value: number) {
     if (!validMushafPage(value)) return;
+    if (value === page) window.requestAnimationFrame(() => paper.current?.scrollIntoView({ block: 'start', behavior: 'instant' }));
     lookup.current?.abort(); setFinding(false); setIndex(null); setIndexQuery(''); if (value === page && error) setRetry(attempt => attempt + 1); setError(''); onPage(value);
   }
   async function openIndex(kind: 'surah' | 'juz', number: number) {
@@ -53,9 +54,9 @@ export default function MushafReader({ onLoaded, page, onPage, onBack, surahs, r
     <form className="mushaf-jump" onSubmit={event => { event.preventDefault(); const value = Number(pageInput); if (!validMushafPage(value)) setInputError('Enter a page from 1 to 604.'); else go(value); }}><label htmlFor="mushaf-page-input">Page</label><input id="mushaf-page-input" type="number" min="1" max={MUSHAF_PAGES} inputMode="numeric" value={pageInput} onChange={event => setPageInput(event.target.value)} aria-invalid={Boolean(inputError)}/><span>of {MUSHAF_PAGES}</span><button type="submit">Go</button></form>
     {inputError && <p className="inline-error" role="alert">{inputError}</p>}
     {index && <section className="mushaf-index" aria-label={`${index} index`}><div className="mushaf-index-heading"><h2>{index === 'surah' ? 'Surah index' : index === 'juz' ? 'Juz index' : 'Saved pages'}</h2><button onClick={() => { lookup.current?.abort(); setFinding(false); setIndex(null); }} aria-label="Close index">Close</button></div>{index === 'surah' && <><input className="mushaf-index-search" aria-label="Search surah index" placeholder="Search surah name or number" value={indexQuery} onChange={event => setIndexQuery(event.target.value)}/>{!surahs.length && <p className="empty-state">The surah index is loading. You can also jump to a page above.</p>}{surahs.filter(surah => `${surah.number} ${surah.englishName} ${surah.name}`.toLowerCase().includes(indexQuery.toLowerCase())).map(surah => <button className="mushaf-index-row" key={surah.number} disabled={finding} onClick={() => void openIndex('surah', surah.number)}><span>{surah.number}. {surah.englishName}</span><span lang="ar" dir="rtl">{surah.name}</span></button>)}</>}{index === 'juz' && <div className="mushaf-juz-grid">{Array.from({ length: 30 }, (_, i) => <button disabled={finding} key={i} onClick={() => void openIndex('juz', i + 1)}>Juz {i + 1}</button>)}</div>}{index === 'saved' && (saved.length ? [...saved].sort((a, b) => a - b).map(number => <button className="mushaf-index-row" key={number} onClick={() => go(number)}><BookOpen size={18}/>Page {number}<CaretRight size={17}/></button>) : <p className="empty-state">Bookmark a page to keep it here.</p>)}{finding && <p role="status" className="loading-state">Finding your page…</p>}</section>}
-    {loading && <p className="loading-state" role="status">Opening page {page}…</p>}
+    {loading && <p className="mushaf-accessible-text" role="status">Opening page {page}…</p>}
     {error && <div className="empty-state" role="alert"><p>{error}</p><button className="outline-button" onClick={() => { setError(''); setRetry(value => value + 1); }}>Try again</button></div>}
-    <article className="mushaf-paper" aria-label={`Quran page ${page}`}><header className="mushaf-page-meta"><span>{ayahs[0]?.surah.englishName || 'Al Quran Al Kareem'}</span><span>{ayahs[0] ? `Juz ${ayahs[0].juz}` : `Page ${page}`}</span></header><div className="mushaf-frame"><PrintedMushafPage key={`${page}:${retry}`} page={page} />{ayahs.length > 0 && <div className="mushaf-accessible-text" lang="ar" dir="rtl">{ayahs.map(ayah => <p key={ayah.number}>{ayah.text} ({ayah.numberInSurah})</p>)}</div>}</div><footer>{page.toLocaleString('ar-EG')}</footer></article>
+    <article ref={paper} className="mushaf-paper" aria-label={`Quran page ${page}`}><header className="mushaf-page-meta"><span>{ayahs[0]?.surah.englishName || 'Al Quran Al Kareem'}</span><span>{ayahs[0] ? `Juz ${ayahs[0].juz}` : `Page ${page}`}</span></header><div className="mushaf-frame"><PrintedMushafPage key={`${page}:${retry}`} page={page} />{ayahs.length > 0 && <div className="mushaf-accessible-text" lang="ar" dir="rtl">{ayahs.map(ayah => <p key={ayah.number}>{ayah.text} ({ayah.numberInSurah})</p>)}</div>}</div><footer>{page.toLocaleString('ar-EG')}</footer></article>
     <nav className="mushaf-pagination" aria-label="Mushaf pages"><button disabled={page === 1} onClick={() => go(page - 1)}><CaretLeft size={18}/>Previous</button><span>{page} / {MUSHAF_PAGES}</span><button disabled={page === MUSHAF_PAGES} onClick={() => go(page + 1)}>Next<CaretRight size={18}/></button></nav>
     {onMarkRead && ayahs.length > 0 && <details className="mushaf-reading-tracker"><summary>Track ayahs read on this page</summary><div>{ayahs.map(ayah => { const read = readToday.includes(`${ayah.surah.number}:${ayah.numberInSurah}`); return <button key={ayah.number} aria-pressed={read} onClick={() => onMarkRead(ayah.surah.number, ayah.numberInSurah)}>{ayah.surah.number}:{ayah.numberInSurah} · {read ? 'Read today' : 'Mark read'}</button>; })}</div></details>}
     <p className="mushaf-credit">Madani Mushaf · <a href="https://quran.islam-db.com/data/pages/quranpages_1024/images/" target="_blank" rel="noreferrer">Page artwork</a></p>

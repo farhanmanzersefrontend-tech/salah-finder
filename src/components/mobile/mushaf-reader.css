@@ -34,28 +34,28 @@
 .night-mode :is(.mushaf-page-meta,.mushaf-ayah-number,.mushaf-paper>footer){color:#c5c6a4}
 @media(min-width:768px){.mushaf-paper{padding:22px}.mushaf-frame{padding:24px}}
 
-/* Keep a complete Mushaf page and its navigation inside the viewport. */
-.mobile-page.mushaf-reader{position:fixed;z-index:25;inset:0 0 calc(78px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;max-width:none;min-height:0;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;overflow:hidden;background:linear-gradient(150deg,var(--mint),#f8f7ec)}
+/* A full-screen printed page, with tools available above and below. */
+.mobile-page.mushaf-reader{position:relative;display:flex;flex-direction:column;gap:12px;width:100%;max-width:800px;min-height:100dvh;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(150deg,var(--mint),#f8f7ec)}
 .mushaf-reader>.page-title{flex-shrink:0;min-height:38px;margin:0}
 .mushaf-reader>.page-title h1{font-size:22px}
 .mushaf-reader .mushaf-tools{flex-shrink:0;margin:0;gap:6px}
 .mushaf-reader .mushaf-tools button{min-height:34px;padding:6px 8px;font-size:11px}
 .mushaf-reader .mushaf-jump{flex-shrink:0;margin:0;gap:8px}
 .mushaf-reader .mushaf-jump input,.mushaf-reader .mushaf-jump button{min-height:32px;height:32px}
-.mushaf-reader .mushaf-paper{display:flex;flex-direction:column;flex:1;min-height:0;padding:8px;overflow:hidden}
+.mushaf-reader .mushaf-paper{display:flex;flex-direction:column;flex:none;height:calc(100dvh - 100px - env(safe-area-inset-bottom));min-height:0;padding:8px;overflow:hidden;scroll-margin-top:12px}
 .mushaf-reader .mushaf-page-meta{flex-shrink:0;font-size:10px;padding:0 4px 5px}
 .mushaf-reader .mushaf-frame{flex:1;min-height:0;padding:6px;overflow:hidden;display:flex;flex-direction:column}
 .mushaf-reader .mushaf-paper>footer{flex-shrink:0;font-size:12px;line-height:1;padding-top:5px}
-.mushaf-reader .mushaf-pagination{flex-shrink:0;margin:0}
-.mushaf-reader .mushaf-pagination button{min-height:36px;padding:6px 12px}
+.mushaf-reader .mushaf-pagination{position:fixed;z-index:40;bottom:calc(8px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:calc(100% - 24px);max-width:760px;min-height:62px;margin:0;padding:8px 10px;border:1px solid #ffffff90;border-radius:22px;background:#edf5e8d9;box-shadow:0 4px 22px #234b4020;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.mushaf-reader .mushaf-pagination button{min-height:44px;padding:8px 14px}
 .mushaf-reader .mushaf-credit{flex-shrink:0;margin:0!important;font-size:9px}
-.mushaf-reader .mushaf-index{position:absolute;z-index:2;inset:100px 12px 70px;max-height:none;margin:0;box-shadow:0 10px 30px #203c2e30;background:#fffdf4}
+.mushaf-reader .mushaf-index{position:relative;z-index:2;max-height:60dvh;margin:0;box-shadow:0 10px 30px #203c2e30;background:#fffdf4}
 .mushaf-reader .mushaf-reading-tracker{flex-shrink:0;padding:5px 10px;font-size:10px}
 .mushaf-reader .mushaf-reading-tracker summary{min-height:18px}
-.mushaf-reader .mushaf-reading-tracker[open]{position:absolute;z-index:3;inset:auto 12px 65px;max-height:55%;overflow:auto;background:#f7faf1;box-shadow:0 8px 30px #203c2e30}
+.mushaf-reader .mushaf-reading-tracker[open]{position:relative;max-height:none;background:#f7faf1;box-shadow:0 8px 30px #203c2e30}
 .night-mode .mobile-page.mushaf-reader{background:linear-gradient(150deg,var(--mint),#172c26)}
 .night-mode .mushaf-reader .mushaf-index,.night-mode .mushaf-reader .mushaf-reading-tracker[open]{background:#263e35}
-@media(min-width:768px){.mobile-page.mushaf-reader{inset:16px 0 110px;width:min(100% - 48px,800px);margin:0 auto;border-radius:24px;padding:14px 20px}.mushaf-reader .mushaf-frame{padding:12px}}
+@media(min-width:768px){.mobile-page.mushaf-reader{width:min(100%,800px);margin:0 auto;padding:12px 20px}.mushaf-reader .mushaf-frame{padding:12px}}
 @media(max-height:600px){.mushaf-reader>.page-title{min-height:30px}.mushaf-reader>.page-title .icon-button{height:30px}.mobile-page.mushaf-reader{gap:4px}.mushaf-reader .mushaf-tools button{min-height:28px}.mushaf-reader .mushaf-credit{display:none}}
 
 .mushaf-artwork{position:relative;flex:1;min-height:0;width:100%;height:100%}
@@ -65,3 +65,8 @@
 .mushaf-accessible-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .night-mode .mushaf-page-image{filter:invert(1);mix-blend-mode:screen}
 .night-mode .mushaf-image-status{color:#ede9ce}
+
+.mobile-app:has(.mushaf-reader) .mobile-main{padding:0;width:100%;max-width:none}
+.mobile-app:has(.mushaf-reader) .mobile-nav{position:relative;inset:auto;transform:none;margin:0 auto;width:100%;border-radius:0;box-shadow:none}
+.mobile-page.mushaf-reader{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+.night-mode .mushaf-reader .mushaf-pagination{background:#263e35e6;border-color:var(--line)}
