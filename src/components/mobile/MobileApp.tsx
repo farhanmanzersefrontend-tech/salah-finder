@@ -145,6 +145,12 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
   const today = dayKey(now);
   const prayerNow = prayerWallDate(now, store.timezone);
   const prayerToday = dayKey(prayerNow);
+  const prayerMinute = prayerNow.getHours() * 60 + prayerNow.getMinutes();
+  const fajrMinute = timeMinutes(store.timings.Fajr);
+  const ishaMinute = timeMinutes(store.timings.Isha);
+  const scheduledNight = Number.isFinite(fajrMinute) && Number.isFinite(ishaMinute) && fajrMinute < ishaMinute
+    ? prayerMinute >= ishaMinute || prayerMinute < fajrMinute
+    : null;
   const hijriDate = formatHijri(now, hijriOffset);
   const done = journal[today] || [];
   const streak = getStreak(journal, now);
@@ -169,9 +175,28 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     window.requestAnimationFrame(() => document.querySelector('.prayer-sheet')?.scrollIntoView({ block: 'start' }));
   };
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 30000);
-    return () => clearInterval(timer);
+    let timer: number;
+    const update = () => {
+      setNow(new Date());
+      timer = window.setTimeout(update, 60000 - Date.now() % 60000);
+    };
+    const resume = () => {
+      window.clearTimeout(timer);
+      update();
+    };
+    update();
+    window.addEventListener("focus", resume);
+    document.addEventListener("visibilitychange", resume);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("focus", resume);
+      document.removeEventListener("visibilitychange", resume);
+    };
   }, []);
+  useEffect(() => {
+    // Apply on load and at Isha/Fajr; manual choices last until the next boundary.
+    if (scheduledNight !== null) setNight(scheduledNight);
+  }, [scheduledNight, setNight]);
   useEffect(() => {
     if (showLocation) {
       locationTrigger.current = document.activeElement as HTMLElement;
