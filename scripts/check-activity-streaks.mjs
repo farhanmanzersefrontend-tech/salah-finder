@@ -16,3 +16,11 @@ assert.equal(activityStreak({ '2026-10-01': Array(10).fill('1:1') }, 10, new Dat
 assert.equal(activityStreak({ '2026-10-01': Array.from({ length: 12 }, (_, i) => `2:${i + 1}`) }, 10, new Date(2026, 9, 1)), 1, 'Exceeding the goal still completes the day');
 assert.equal(longestActivityStreak({ ...journal, '2027-01-01': completed }, 5, new Date(2026, 9, 3)), 3, 'Future entries should not count');
 console.log('Activity streak checks passed: daily goals, unique ayahs, month boundaries, missed days, best streak, and future dates.');
+
+const hadithJournal = { '2026-10-15': ['1', '8'], '2026-10-16': ['10', '12'], '2026-10-17': ['13'] };
+assert.equal(activityStreak(hadithJournal, 2, new Date(2026, 9, 17)), 2, 'One Hadith today must not complete the two-Hadith goal');
+hadithJournal['2026-10-17'].push('15');
+assert.equal(activityStreak(hadithJournal, 2, new Date(2026, 9, 17)), 3);
+assert.equal(longestActivityStreak(hadithJournal, 2, new Date(2026, 9, 17)), 3);
+assert.equal(activityStreak({ '2026-10-17': ['13', '13'] }, 2, new Date(2026, 9, 17)), 0, 'The same Hadith cannot be counted twice');
+console.log('Hadith streak checks passed: two-read goal, consecutive days, best streak, and duplicate prevention.');

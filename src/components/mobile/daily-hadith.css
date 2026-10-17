@@ -1,0 +1,19 @@
+.daily-hadith{margin-top:22px}
+.daily-hadith-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#fff}
+.daily-hadith-heading h2{font-size:19px;font-weight:500}
+.daily-hadith-heading p{font-size:11px;line-height:1.8;margin-top:4px!important;opacity:.85}
+.daily-hadith-date{display:block;color:#fff;font-size:10px;margin-top:8px;opacity:.8}
+.daily-hadith .hadith-list article{overflow-wrap:anywhere}
+.daily-hadith .hadith-list .small-pill{max-width:100%;white-space:normal;line-height:1.7}
+.daily-hadith .hadith-list .hadith-english{white-space:pre-line}
+.daily-hadith .hadith-list .hadith-urdu{font-family:inherit;font-size:13px;font-weight:400;line-height:2;text-align:right;white-space:pre-line;margin-top:18px;padding-top:16px;border-top:1px solid #d8dfd0}
+.daily-hadith-credit{text-align:center;font-size:10px;line-height:1.8;color:#fff;margin-top:20px!important}
+.daily-hadith-credit a{color:inherit;text-underline-offset:3px}
+.daily-hadith-error{padding:18px;background:#fff9ed;border:1px solid #fff;border-radius:20px;margin-top:18px;color:var(--deep);font-size:12px;line-height:1.8}
+.daily-hadith-error button{margin-top:12px}
+.daily-hadith .hadith-mark-read{margin-top:16px;color:var(--deep)}
+.daily-hadith .hadith-mark-read.is-read{background:var(--mint);border-color:var(--teal)}
+.night-mode :is(.daily-hadith-heading,.daily-hadith-date,.daily-hadith-credit){color:var(--deep)}
+.night-mode .daily-hadith .hadith-urdu{border-color:var(--line)}
+.night-mode .daily-hadith-error{background:var(--mint);border-color:var(--line)}
+@media(min-width:768px){.daily-hadith .hadith-list .hadith-urdu{font-size:14px}}

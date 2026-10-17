@@ -46,6 +46,7 @@ import { dayKey, getStreak, useSaved } from "./useJournal";
 import type { Journal } from "./useJournal";
 import MobileQuran from "./MobileQuran";
 import StreakGoals from "./StreakGoals";
+import { dailyHadithNumbers, hadithDay } from "../../utils/dailyHadith";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
 import ProfileOther from "./ProfileOther";
@@ -108,6 +109,8 @@ function ClockFace({ now }: { now: Date }) {
 export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer: string | null; onMuteAzan: () => void }) {
   const [screen, setScreen, backScreen] = useNavigationState<Screen>("screen", "home", true);
   const [now, setNow] = useState(new Date());
+  const [hadithJournal, setHadithJournal] = useSaved<Record<string, string[]>>("salah-hadith-daily-journal", {});
+  const [, navigateHadithTab] = useNavigationState("duaTab", "Daily");
   const [quranJournal, setQuranJournal] = useSaved<Record<string, string[]>>("salah-quran-daily-journal", {});
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
@@ -153,6 +156,10 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     window.scrollTo({ top: 0 });
   };
   const goBack = (fallback: Screen = "home") => backScreen(fallback);
+  const openHadith = () => {
+    go("dua");
+    navigateHadithTab("Hadith", true);
+  };
   const openPrayerTracker = () => {
     go("home");
     window.requestAnimationFrame(() => document.querySelector('.prayer-sheet')?.scrollIntoView({ block: 'start' }));
@@ -390,7 +397,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                   <ChartBar size={18} /> Statistics
                 </button>
               </div>
-              <StreakGoals prayers={journal} quran={quranJournal} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} onStreaks={() => go("streaks")} />
+              <StreakGoals prayers={journal} quran={quranJournal} hadith={hadithJournal} onHadith={openHadith} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} onStreaks={() => go("streaks")} />
               <div className="hero-date-strip">
                 <time dateTime={today} aria-label="Gregorian date">
                   {gregorianDateFormat.format(now)}
@@ -689,7 +696,14 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
             </button>
           </div>
         )}
-        {screen === "dua" && <MobileDuas />}
+        {screen === "dua" && <MobileDuas hadithJournal={hadithJournal} onHadithRead={(day, number) => {
+          if (day !== hadithDay(new Date()) || !dailyHadithNumbers(day).includes(number)) return;
+          setHadithJournal(previous => {
+            const read = previous[day] || [];
+            const key = String(number);
+            return { ...previous, [day]: read.includes(key) ? read.filter(item => item !== key) : [...read, key] };
+          });
+        }} />}
         {screen === "quran" && <MobileQuran readToday={quranJournal[today] || []} onMarkRead={(surah, ayah) => {
           const key = `${surah}:${ayah}`;
           const date = dayKey(new Date());
@@ -746,7 +760,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
             ))}
           </div>
         )}
-        {screen === "streaks" && <div className="mobile-page">{header("Streaks & daily goals", "profile")}<p className="page-subtitle">A little consistency, every day.</p><StreakGoals expanded prayers={journal} quran={quranJournal} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} /></div>}
+        {screen === "streaks" && <div className="mobile-page">{header("Streaks & daily goals", "profile")}<p className="page-subtitle">A little consistency, every day.</p><StreakGoals expanded prayers={journal} quran={quranJournal} hadith={hadithJournal} onHadith={openHadith} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} /></div>}
         {screen === "profile" && (
           <div className="mobile-page">
             <div className="page-title">
@@ -789,7 +803,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                 },
                 {
                   title: "Streaks & daily goals",
-                  sub: "Your Quran and namaz journey",
+                  sub: "Quran, namaz & Hadith journey",
                   icon: Fire,
                   page: "streaks",
                 },

@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
+const source = await readFile(new URL('../src/utils/dailyHadith.ts', import.meta.url), 'utf8');
+const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+const { dailyHadithNumbers, loadDailyHadith, hadithDay } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const day = '2026-10-17';
+assert.equal(hadithDay(new Date(2026, 9, 17, 23, 59)), day);
+assert.equal(new Set(dailyHadithNumbers(day)).size, 2);
+assert.deepEqual(dailyHadithNumbers(day), dailyHadithNumbers(day));
+assert.notDeepEqual(dailyHadithNumbers(day), dailyHadithNumbers('2026-10-18'));
+const storage = new Map();
+globalThis.localStorage = { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) };
+let requests = 0;
+function response(url, mismatch = false) {
+  const number = Number(url.match(/\/(\d+)\.json$/)[1]);
+  return { ok: true, json: async () => ({ metadata: { section: { 1: 'Faith' } }, hadiths: [{ hadithnumber: number, arabicnumber: mismatch && url.includes('urd-') ? number + 1 : number, text: url.includes('urd-') ? '\u0627\u0631\u062f\u0648 \u062a\u0631\u062c\u0645\u06c1' : 'Narrated Aisha: The English translation.', reference: { book: 1, hadith: 2 } }] }) };
+}
+globalThis.fetch = async url => { requests++; return response(url); };
+const signal = new AbortController().signal;
+const result = await loadDailyHadith(day, signal);
+assert.equal(result.length, 2);
+assert.equal(result[0].narrator, 'Aisha');
+assert.equal(result[0].urdu, '\u0627\u0631\u062f\u0648 \u062a\u0631\u062c\u0645\u06c1');
+assert.equal(result[0].sourceUrl, `https://sunnah.com/bukhari:${result[0].referenceNumber}`);
+await loadDailyHadith(day, signal);
+assert.equal(requests, 4, 'Same-day cached Hadiths should work without network requests');
+storage.clear();
+globalThis.fetch = async url => url.includes('cdn.jsdelivr.net') ? { ok: false } : response(url);
+assert.equal((await loadDailyHadith(day, signal)).length, 2, 'The fallback should recover from a CDN failure');
+storage.clear();
+globalThis.fetch = async url => response(url, true);
+await assert.rejects(loadDailyHadith(day, signal), /could not be matched/);
+globalThis.fetch = async () => ({ ok: true, json: async () => ({ hadiths: [] }) });
+await assert.rejects(loadDailyHadith(day, signal), /Unable to load/);
+console.log('Daily Hadith checks passed: daily rotation, two distinct entries, Urdu matching, source links, caching, fallback, and invalid responses.');
+console.log(`Today’s selected Bukhari references: ${dailyHadithNumbers(day).join(', ')}`);

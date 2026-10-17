@@ -3,6 +3,7 @@
 .goal-tabs button{display:flex;align-items:center;gap:5px;border:1px solid #ffffff70;background:#ffffffb8;color:var(--deep);border-radius:20px;padding:6px 10px;font-size:11px}
 .goal-tabs button.active{background:var(--mint);color:var(--deep)}
 .goal-tabs .goal-view-streaks{margin-left:auto}
+@media(max-width:400px){.goal-tabs{gap:5px}.goal-tabs button{padding:6px 8px;font-size:10px}}
 .daily-goal-card{width:100%;min-width:0;padding:18px;border:1px solid #ffffff80;border-radius:26px;background:linear-gradient(120deg,#fff9f180,color-mix(in srgb,var(--mint) 48%,transparent));color:var(--deep);box-shadow:0 5px 18px #3c5e4d0d;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
 .daily-goal-heading{display:flex;align-items:center;gap:12px}
 .daily-goal-heading>span{flex-shrink:0}

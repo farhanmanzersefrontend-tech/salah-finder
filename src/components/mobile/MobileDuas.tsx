@@ -3,6 +3,7 @@ import { ArrowLeft, CaretRight, CloudSun, Heart, House, Moon, HandsClapping, Sun
 import { useSaved } from './useJournal';
 import MobileDhikr from './MobileDhikr';
 import DuaCatalog from './DuaCatalog';
+import DailyHadith from './DailyHadith';
 import { useNavigationState } from '../../hooks/useNavigationState';
 
 const collectionChildRoutes = ['duaCategory', 'duaTopic', 'duaDetail'] as const;
@@ -17,7 +18,7 @@ const duas = [
   { title: 'Steadfast faith', subtitle: 'Keep your heart close', icon: HandsClapping, color: 'mint', arabic: 'رَبَّنَا لَا تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ', translation: 'Our Lord, let not our hearts deviate after You have guided us and grant us from Yourself mercy. Indeed, You are the Bestower.', source: 'Quran 3:8' },
 ];
 
-export default function MobileDuas() {
+export default function MobileDuas({ hadithJournal, onHadithRead }: { hadithJournal: Record<string, string[]>; onHadithRead: (day: string, number: number) => void }) {
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [collection, openCollection, backCollection] = useNavigationState('duaCollection', false, collectionChildRoutes);
@@ -29,7 +30,7 @@ export default function MobileDuas() {
   return <div className="mobile-page duas-page"><div className="page-title">{current ? <button className="icon-button" onClick={() => setSelected(null)} aria-label="Back to duas"><ArrowLeft size={21}/></button> : null}<h1>{current ? 'Daily dua' : 'Dua'}</h1>{!current && <button className="icon-button" aria-label={searching ? 'Close search' : 'Search duas'} onClick={() => { setSearching(value => !value); setQuery(''); }}>{searching ? <X size={21}/> : <MagnifyingGlass size={21}/>}</button>}</div>
     {current ? <article className="dua-detail"><div className={`dua-illustration ${current.color}`}><current.icon size={35} weight="duotone"/></div><h2>{current.title}</h2><p className="arabic-text" lang="ar" dir="rtl">{current.arabic}</p><p className="dua-translation">{current.translation}</p><span className="source-label">{current.source}</span><button className="outline-button" aria-pressed={favorites.includes(selected!)} onClick={() => setFavorites(previous => previous.includes(selected!) ? previous.filter(id => id !== selected) : [...previous, selected!])}><Heart size={18} weight={favorites.includes(selected!) ? 'fill' : 'regular'}/>{favorites.includes(selected!) ? 'Saved to favorites' : 'Save this dua'}</button></article> : <>
     <p className="page-subtitle">A remembrance for every moment.</p><div className="segment-control" aria-label="Dua category">{['Dhikr','Daily','Hadith','Saved'].map(t=><button key={t} className={tab === t ? 'active' : ''} onClick={() => { setTab(t); setQuery(''); }} aria-pressed={tab === t}>{t}</button>)}</div>
-    {tab === 'Hadith' && <section className="hadith-list"><article><span className="small-pill">Narrated by Umar ibn al-Khattab</span><h2>Begin with intention</h2><p>The value of a deed is connected to the intention behind it.</p><small>Summary of the teaching</small><a href="https://sunnah.com/bukhari:1" target="_blank" rel="noreferrer">Sahih al-Bukhari 1 <CaretRight size={13}/></a></article><article><span className="small-pill">Narrated by Aisha</span><h2>Little, but consistent</h2><p>Keep your good deeds sincere and steady. Even small deeds, done regularly, are beloved to Allah.</p><small>Summary of the teaching</small><a href="https://sunnah.com/bukhari:6464" target="_blank" rel="noreferrer">Sahih al-Bukhari 6464 <CaretRight size={13}/></a></article></section>}
+    {tab === 'Hadith' && <DailyHadith journal={hadithJournal} onMarkRead={onHadithRead} />}
     {tab === 'Daily' && !collection && <button className="dua-browse-collection" onClick={() => { openCollection(true); setSearching(false); setQuery(''); window.scrollTo({ top: 0 }); }}><span className="dua-illustration mint"><BookOpen size={27} weight="duotone"/></span><span><strong>Explore all duas</strong><small>Browse the full collection by category</small></span><CaretRight size={17}/></button>}
     {searching && !collection && (tab === 'Daily' || tab === 'Saved') && <label className="search-field"><MagnifyingGlass size={18}/><input autoFocus aria-label="Search daily duas" placeholder="Search daily duas" value={query} onChange={event => setQuery(event.target.value)}/></label>}
     {tab === 'Daily' && collection && <DuaCatalog onExit={() => { backCollection(false); window.scrollTo({ top: 0 }); }} />}
