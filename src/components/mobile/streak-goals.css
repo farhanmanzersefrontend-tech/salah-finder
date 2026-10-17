@@ -1,0 +1,37 @@
+.screen-home .streak-goals{position:relative;margin:18px 0;color:var(--deep);flex-shrink:0}
+.goal-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.goal-tabs button{display:flex;align-items:center;gap:5px;border:1px solid #ffffff70;background:#ffffffb8;color:var(--deep);border-radius:20px;padding:6px 10px;font-size:11px}
+.goal-tabs button.active{background:var(--mint);color:var(--deep)}
+.goal-tabs .goal-view-streaks{margin-left:auto}
+.daily-goal-card{width:100%;min-width:0;padding:18px;border:1px solid #ffffff80;border-radius:26px;background:linear-gradient(120deg,#fff9f180,color-mix(in srgb,var(--mint) 48%,transparent));color:var(--deep);box-shadow:0 5px 18px #3c5e4d0d;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.daily-goal-heading{display:flex;align-items:center;gap:12px}
+.daily-goal-heading>span{flex-shrink:0}
+.daily-goal-heading>div{min-width:0}
+.daily-goal-heading>span{display:grid;place-items:center;width:40px;height:40px;background:var(--mint);color:var(--teal);border:2px solid #ffffff99;border-radius:50%}
+.daily-goal-heading h2{font-size:17px;font-weight:500;line-height:1.4}
+.daily-goal-heading p{font-size:11px;opacity:.85;margin-top:2px}
+.goal-progress{height:23px;overflow:hidden;border-radius:20px;background:repeating-linear-gradient(125deg,color-mix(in srgb,var(--teal) 15%,transparent) 0 1px,transparent 1px 4px),color-mix(in srgb,var(--mint) 65%,white);margin:18px 0 14px;border:1px solid color-mix(in srgb,var(--teal) 20%,transparent)}
+.goal-progress i{display:block;height:100%;background:var(--teal);border-radius:20px;transition:width .3s ease}
+.goal-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px}
+.goal-totals>div:last-child{text-align:right}
+.goal-totals small{display:block;font-size:10px;opacity:.8;margin-bottom:3px}
+.goal-totals strong{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:500}
+.goal-totals>div:last-child strong{justify-content:flex-end}
+.goal-totals strong svg{color:#d99a55}
+.goal-action{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;margin-top:16px;border:1px solid color-mix(in srgb,var(--teal) 22%,transparent);border-radius:22px;padding:9px;background:#ffffff40;color:var(--deep)!important;font-size:12px!important}
+.streak-goals-expanded{display:grid;gap:18px;margin-top:20px}
+.goal-best{font-size:12px;margin-top:16px!important}
+.goal-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:14px}
+.goal-week>div{text-align:center;font-size:9px}
+.goal-week span{display:block;margin-bottom:5px;opacity:.8}
+.goal-week b{display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--teal) 25%,transparent);border-radius:12px;min-height:34px;font-weight:500}
+.goal-week .complete b{background:var(--mint);color:var(--deep)}
+.streak-explanation{font-size:12px;line-height:1.9;color:var(--muted)}
+@media(min-width:768px){.streak-goals-expanded{grid-template-columns:repeat(2,minmax(0,1fr))}.streak-explanation{grid-column:1/-1}}
+@media(prefers-reduced-motion:reduce){.goal-progress i{transition:none}}
+
+.night-mode .daily-goal-card{background:linear-gradient(120deg,#2c454099,#233a3473);border-color:var(--line);color:var(--deep)}
+.night-mode .goal-tabs button,.night-mode .goal-action{background:#ffffff0d;border-color:var(--line);color:var(--deep)}
+.night-mode .goal-tabs button.active{background:var(--mint)}
+.night-mode .goal-progress{background:repeating-linear-gradient(125deg,#ffffff15 0 1px,transparent 1px 4px),#ffffff08}
+.night-mode .daily-goal-heading>span{border-color:var(--line)}

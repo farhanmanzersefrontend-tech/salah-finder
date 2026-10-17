@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import ts from 'typescript';
+const source = await readFile(new URL('../src/utils/activityStreak.ts', import.meta.url), 'utf8');
+const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+const { activityCount, activityStreak, longestActivityStreak } = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const completed = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const journal = { '2026-09-29': completed, '2026-09-30': completed, '2026-10-01': completed };
+assert.equal(activityStreak(journal, 5, new Date(2026, 9, 1)), 3);
+assert.equal(activityStreak(journal, 5, new Date(2026, 9, 2)), 3, 'An incomplete today should preserve yesterday’s streak');
+assert.equal(activityStreak(journal, 5, new Date(2026, 9, 3)), 0, 'A missed yesterday resets the streak');
+assert.equal(longestActivityStreak(journal, 5, new Date(2026, 9, 3)), 3);
+assert.equal(activityStreak({}, 10, new Date()), 0);
+assert.equal(activityCount({ '2026-10-01': ['1:1', '1:1', '1:2'] }, new Date(2026, 9, 1)), 2, 'Repeated ayahs count once');
+assert.equal(activityStreak({ '2026-10-01': Array(10).fill('1:1') }, 10, new Date(2026, 9, 1)), 0);
+assert.equal(activityStreak({ '2026-10-01': Array.from({ length: 12 }, (_, i) => `2:${i + 1}`) }, 10, new Date(2026, 9, 1)), 1, 'Exceeding the goal still completes the day');
+assert.equal(longestActivityStreak({ ...journal, '2027-01-01': completed }, 5, new Date(2026, 9, 3)), 3, 'Future entries should not count');
+console.log('Activity streak checks passed: daily goals, unique ayahs, month boundaries, missed days, best streak, and future dates.');

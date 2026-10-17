@@ -45,6 +45,7 @@ import { Landscape, MosqueScene, Flame } from "./Artwork";
 import { dayKey, getStreak, useSaved } from "./useJournal";
 import type { Journal } from "./useJournal";
 import MobileQuran from "./MobileQuran";
+import StreakGoals from "./StreakGoals";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
 import ProfileOther from "./ProfileOther";
@@ -64,6 +65,7 @@ import { useNavigationState } from "../../hooks/useNavigationState";
 type Screen =
   | GuideScreen
   | "home"
+  | "streaks"
   | "stats"
   | "dua"
   | "quran"
@@ -106,6 +108,7 @@ function ClockFace({ now }: { now: Date }) {
 export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer: string | null; onMuteAzan: () => void }) {
   const [screen, setScreen, backScreen] = useNavigationState<Screen>("screen", "home", true);
   const [now, setNow] = useState(new Date());
+  const [quranJournal, setQuranJournal] = useSaved<Record<string, string[]>>("salah-quran-daily-journal", {});
   const [journal, setJournal] = useSaved<Journal>("salah-mobile-journal", {});
   const [theme, setTheme] = useSaved("salah-mobile-theme", 0);
   const [night, setNight] = useSaved("salah-night-mode", false);
@@ -150,6 +153,10 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
     window.scrollTo({ top: 0 });
   };
   const goBack = (fallback: Screen = "home") => backScreen(fallback);
+  const openPrayerTracker = () => {
+    go("home");
+    window.requestAnimationFrame(() => document.querySelector('.prayer-sheet')?.scrollIntoView({ block: 'start' }));
+  };
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
@@ -383,10 +390,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                   <ChartBar size={18} /> Statistics
                 </button>
               </div>
-              <div className="hero-greeting">
-                <span>Find your calm.</span>
-                <p>One prayer at a time.</p>
-              </div>
+              <StreakGoals prayers={journal} quran={quranJournal} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} onStreaks={() => go("streaks")} />
               <div className="hero-date-strip">
                 <time dateTime={today} aria-label="Gregorian date">
                   {gregorianDateFormat.format(now)}
@@ -680,7 +684,14 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
           </div>
         )}
         {screen === "dua" && <MobileDuas />}
-        {screen === "quran" && <MobileQuran />}
+        {screen === "quran" && <MobileQuran readToday={quranJournal[today] || []} onMarkRead={(surah, ayah) => {
+          const key = `${surah}:${ayah}`;
+          const date = dayKey(new Date());
+          setQuranJournal(previous => {
+            const read = previous[date] || [];
+            return { ...previous, [date]: read.includes(key) ? read.filter(value => value !== key) : [...read, key] };
+          });
+        }} />}
         {(screen === "settings" || screen === "manual-times" || screen === "notification-settings") && <MobileSettings
           key={screen}
           initialManual={screen === "manual-times"}
@@ -729,6 +740,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
             ))}
           </div>
         )}
+        {screen === "streaks" && <div className="mobile-page">{header("Streaks & daily goals", "profile")}<p className="page-subtitle">A little consistency, every day.</p><StreakGoals expanded prayers={journal} quran={quranJournal} now={now} onQuran={() => go("quran")} onPrayers={openPrayerTracker} /></div>}
         {screen === "profile" && (
           <div className="mobile-page">
             <div className="page-title">
@@ -768,6 +780,12 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                   sub: "Prayer times, reminders & calendar",
                   icon: GearSix,
                   page: "settings",
+                },
+                {
+                  title: "Streaks & daily goals",
+                  sub: "Your Quran and namaz journey",
+                  icon: Fire,
+                  page: "streaks",
                 },
                 {
                   title: "Appearance",
