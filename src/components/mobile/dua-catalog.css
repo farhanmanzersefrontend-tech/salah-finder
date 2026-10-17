@@ -1,0 +1,37 @@
+.dua-catalog { margin-top:24px; }
+.dua-browse-collection { display:flex;align-items:center;gap:13px;width:100%;margin-top:22px;padding:12px;border:1px solid #ffffff90;border-radius:28px;background:#ffffffb8;text-align:left;color:var(--deep); }
+.dua-browse-collection>span:nth-child(2) { flex:1; }
+.dua-browse-collection strong { display:block;font-size:13px;font-weight:500; }
+.dua-browse-collection small { display:block;font-size:10px;margin-top:3px; }
+.night-mode .dua-browse-collection { background:var(--mint);border-color:var(--line); }
+.dua-urdu-name { display:block;font-family:'Noto Naskh Arabic','Urdu Typesetting',serif;font-size:17px;font-weight:400;line-height:1.9;margin-top:5px;overflow-wrap:anywhere; }
+.dua-category-card .dua-urdu-name { font-size:16px; }
+.dua-catalog .dua-row { border-radius:26px; }
+.dua-catalog .dua-row strong { line-height:1.5; }
+.dua-catalog .dua-row .dua-urdu-name { font:inherit;color:inherit;margin-top:5px; }
+.dua-catalog-heading { display:flex;align-items:center;gap:8px;color:#fff; }
+.dua-catalog-heading h2 { font-size:20px;font-weight:500;flex:1;line-height:1.4; }
+.dua-catalog-heading .small-pill { font-size:9px;color:var(--deep); }
+.dua-category-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px; }
+.dua-category-card { display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:16px;min-height:138px;padding:14px 11px 11px;border:1px solid #ffffffab;border-radius:20px;background:linear-gradient(145deg,#fffaf2ed,#e5f1e3ed);box-shadow:0 4px 14px #355d5710;text-align:left;transition:transform .2s,box-shadow .2s; }
+.dua-category-card strong { color:var(--deep);font-size:13px;font-weight:600;line-height:1.4; }
+.dua-category-card .dua-illustration { align-self:flex-end;width:48px;height:48px;color:var(--deep);border-width:2px; }
+.dua-category-card:hover { transform:translateY(-2px);box-shadow:0 6px 18px #355d5724; }
+.dua-category-card:active { transform:scale(.98); }
+.dua-reading-list .dua-detail { margin-top:16px;overflow-wrap:anywhere; }
+.dua-reading-list h3 { font-size:17px;font-weight:500;margin:14px 0;line-height:1.5; }
+.dua-instruction { font-size:12px;line-height:1.8;color:var(--deep);white-space:pre-line; }
+.dua-transliteration { font-size:12px;line-height:1.9;color:#6b8278;font-style:italic;margin-bottom:18px!important;white-space:pre-line; }
+.dua-reading-list .dua-translation { white-space:pre-line;text-align:start; }
+.dua-reading-list .dua-translation-urdu { margin-top:12px;font-family:inherit;font-size:12px;font-weight:400;line-height:1.9;text-align:center;color:var(--deep);overflow-wrap:anywhere; }
+@media(min-width:768px) { .dua-reading-list .dua-translation-urdu { font-size:14px; } }
+.dua-reading-list .arabic-text { white-space:pre-line; }
+.dua-data-credit { text-align:center;font-size:10px;color:#fff;margin-top:22px!important; }
+.dua-data-credit a { color:inherit;text-underline-offset:3px; }
+.night-mode .dua-category-card { background:linear-gradient(145deg,#304d44,#263e37);border-color:var(--line); }
+.night-mode .dua-catalog-heading,.night-mode .dua-data-credit { color:var(--deep); }
+.night-mode .dua-catalog-heading .small-pill { background:var(--mint); }
+.night-mode .dua-transliteration { color:var(--muted); }
+@media(min-width:768px) { .dua-category-grid { grid-template-columns:repeat(4,minmax(0,1fr));gap:16px; }.dua-category-card { min-height:160px;padding:18px; }.dua-category-card strong { font-size:16px; } }
+@media(max-width:350px) { .dua-category-grid { gap:7px; }.dua-category-card { padding:12px 8px;min-height:130px; }.dua-category-card strong { font-size:12px; }.dua-catalog-heading .small-pill { display:none; } }
+@media(prefers-reduced-motion:reduce) { .dua-category-card { transition:none; } }

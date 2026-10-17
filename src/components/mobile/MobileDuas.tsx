@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, CaretRight, CloudSun, Heart, House, MagnifyingGlass, Moon, HandsClapping, Sun, BookOpen, X } from 'phosphor-react';
+import { ArrowLeft, CaretRight, CloudSun, Heart, House, Moon, HandsClapping, Sun, BookOpen, MagnifyingGlass, X } from 'phosphor-react';
 import { useSaved } from './useJournal';
 import MobileDhikr from './MobileDhikr';
+import DuaCatalog from './DuaCatalog';
 import { useNavigationState } from '../../hooks/useNavigationState';
+
+const collectionChildRoutes = ['duaCategory', 'duaTopic', 'duaDetail'] as const;
 
 const duas = [
   { title: 'Family & loved ones', subtitle: 'A prayer for your home', icon: House, color: 'mint', arabic: 'رَبَّنَا هَبْ لَنَا مِنْ أَزْوَاجِنَا وَذُرِّيَّاتِنَا قُرَّةَ أَعْيُنٍ وَاجْعَلْنَا لِلْمُتَّقِينَ إِمَامًا', translation: 'Our Lord, grant us from among our spouses and offspring comfort to our eyes and make us an example for the righteous.', source: 'Quran 25:74' },
@@ -15,19 +18,25 @@ const duas = [
 ];
 
 export default function MobileDuas() {
-  const [tab, setTab] = useNavigationState('duaTab', 'Daily');
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
+  const [collection, openCollection, backCollection] = useNavigationState('duaCollection', false, collectionChildRoutes);
+  const [tab, setTab] = useNavigationState('duaTab', 'Daily');
   const [selected, navigateSelected, backSelected] = useNavigationState<number | null>('duaDetail', null);
   const setSelected = (value: number | null) => value === null && selected !== null ? backSelected(null) : navigateSelected(value);
   const [favorites, setFavorites] = useSaved<number[]>('salah-favorite-duas', []);
   const current = selected === null ? null : duas[selected];
-  return <div className="mobile-page duas-page"><div className="page-title">{current ? <button className="icon-button" onClick={() => setSelected(null)} aria-label="Back to duas"><ArrowLeft size={21}/></button> : null}<h1>{current ? 'Daily dua' : 'Dua'}</h1><button className="icon-button" aria-label={searching ? 'Close search' : 'Search duas'} onClick={() => { setSearching(!searching); setQuery(''); setSelected(null); }}>{searching ? <X size={21}/> : <MagnifyingGlass size={21}/>}</button></div>
+  return <div className="mobile-page duas-page"><div className="page-title">{current ? <button className="icon-button" onClick={() => setSelected(null)} aria-label="Back to duas"><ArrowLeft size={21}/></button> : null}<h1>{current ? 'Daily dua' : 'Dua'}</h1>{!current && <button className="icon-button" aria-label={searching ? 'Close search' : 'Search duas'} onClick={() => { setSearching(value => !value); setQuery(''); }}>{searching ? <X size={21}/> : <MagnifyingGlass size={21}/>}</button>}</div>
     {current ? <article className="dua-detail"><div className={`dua-illustration ${current.color}`}><current.icon size={35} weight="duotone"/></div><h2>{current.title}</h2><p className="arabic-text" lang="ar" dir="rtl">{current.arabic}</p><p className="dua-translation">{current.translation}</p><span className="source-label">{current.source}</span><button className="outline-button" aria-pressed={favorites.includes(selected!)} onClick={() => setFavorites(previous => previous.includes(selected!) ? previous.filter(id => id !== selected) : [...previous, selected!])}><Heart size={18} weight={favorites.includes(selected!) ? 'fill' : 'regular'}/>{favorites.includes(selected!) ? 'Saved to favorites' : 'Save this dua'}</button></article> : <>
-    <p className="page-subtitle">A remembrance for every moment.</p><div className="segment-control" aria-label="Dua category">{['Dhikr','Daily','Hadith','Saved'].map(t=><button key={t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)} aria-pressed={tab === t}>{t}</button>)}</div>
+    <p className="page-subtitle">A remembrance for every moment.</p><div className="segment-control" aria-label="Dua category">{['Dhikr','Daily','Hadith','Saved'].map(t=><button key={t} className={tab === t ? 'active' : ''} onClick={() => { setTab(t); setQuery(''); }} aria-pressed={tab === t}>{t}</button>)}</div>
     {tab === 'Hadith' && <section className="hadith-list"><article><span className="small-pill">Narrated by Umar ibn al-Khattab</span><h2>Begin with intention</h2><p>The value of a deed is connected to the intention behind it.</p><small>Summary of the teaching</small><a href="https://sunnah.com/bukhari:1" target="_blank" rel="noreferrer">Sahih al-Bukhari 1 <CaretRight size={13}/></a></article><article><span className="small-pill">Narrated by Aisha</span><h2>Little, but consistent</h2><p>Keep your good deeds sincere and steady. Even small deeds, done regularly, are beloved to Allah.</p><small>Summary of the teaching</small><a href="https://sunnah.com/bukhari:6464" target="_blank" rel="noreferrer">Sahih al-Bukhari 6464 <CaretRight size={13}/></a></article></section>}
-    {searching && <label className="search-field"><MagnifyingGlass size={18}/><input autoFocus placeholder="Search daily duas" aria-label="Search daily duas" value={query} onChange={e => { setQuery(e.target.value); setTab('Daily'); }}/></label>}
-    {tab === 'Dhikr' ? <MobileDhikr /> : tab !== 'Hadith' && <div className="dua-list">{duas.map((dua,index)=>({dua,index})).filter(({dua,index}) => (tab !== 'Saved' || favorites.includes(index)) && `${dua.title} ${dua.subtitle}`.toLowerCase().includes(query.toLowerCase())).map(({dua,index})=><button className="dua-row" key={dua.title} onClick={() => setSelected(index)}><span className={`dua-illustration ${dua.color}`}><dua.icon size={29} weight="duotone"/></span><span><strong>{dua.title}</strong><small>1 Dua · {dua.source}</small></span><CaretRight size={15}/></button>)}{tab === 'Saved' && !favorites.length && <div className="empty-state"><Heart size={32}/><h2>Keep a dua close</h2><p>Save a daily dua and find it here.</p></div>}{query && !duas.some(d => `${d.title} ${d.subtitle}`.toLowerCase().includes(query.toLowerCase())) && <p className="empty-state">No duas found. Try a different word.</p>}</div>}
+    {tab === 'Daily' && !collection && <button className="dua-browse-collection" onClick={() => { openCollection(true); setSearching(false); setQuery(''); window.scrollTo({ top: 0 }); }}><span className="dua-illustration mint"><BookOpen size={27} weight="duotone"/></span><span><strong>Explore all duas</strong><small>Browse the full collection by category</small></span><CaretRight size={17}/></button>}
+    {searching && !collection && (tab === 'Daily' || tab === 'Saved') && <label className="search-field"><MagnifyingGlass size={18}/><input autoFocus aria-label="Search daily duas" placeholder="Search daily duas" value={query} onChange={event => setQuery(event.target.value)}/></label>}
+    {tab === 'Daily' && collection && <DuaCatalog onExit={() => { backCollection(false); window.scrollTo({ top: 0 }); }} />}
+    {tab === 'Saved' && <DuaCatalog savedOnly />}
+
+    {tab === 'Dhikr' ? <MobileDhikr /> : ((tab === 'Daily' && !collection) || (tab === 'Saved' && favorites.length > 0)) && <div className="dua-list">{duas.map((dua,index)=>({dua,index})).filter(({dua,index}) => (tab !== 'Saved' || favorites.includes(index)) && `${dua.title} ${dua.subtitle} ${dua.translation}`.toLowerCase().includes(query.toLowerCase())).map(({dua,index})=><button className="dua-row" key={dua.title} onClick={() => setSelected(index)}><span className={`dua-illustration ${dua.color}`}><dua.icon size={29} weight="duotone"/></span><span><strong>{dua.title}</strong><small>1 Dua · {dua.source}</small></span><CaretRight size={15}/></button>)}{tab === 'Saved' && !favorites.length && <div className="empty-state"><Heart size={32}/><h2>Keep a dua close</h2><p>Save a daily dua and find it here.</p></div>}</div>}
+    {query && !collection && tab === 'Daily' && !duas.some(dua => `${dua.title} ${dua.subtitle} ${dua.translation}`.toLowerCase().includes(query.toLowerCase())) && <p className="empty-state">No daily duas found. Try another word.</p>}
     <div className="dua-footer"><SparkleIcon/><p>Remember Him.<br/><strong>Find peace within.</strong></p></div></>}
   </div>;
 }

@@ -18,7 +18,7 @@ function subscribe(listener: () => void) {
 }
 
 /** Store navigation in real browser history so device Back and Forward work too. */
-export function useNavigationState<T>(key: string, initial: T, resetChildren = false) {
+export function useNavigationState<T>(key: string, initial: T, resetChildren: boolean | readonly string[] = false) {
   const fallback = useRef(initial).current;
   const getSnapshot = useCallback(() => (entry()?.values[key] as T | undefined) ?? fallback, [key, fallback]);
   const value = useSyncExternalStore(subscribe, getSnapshot, () => fallback);
@@ -31,7 +31,10 @@ export function useNavigationState<T>(key: string, initial: T, resetChildren = f
     // Seed this entry before pushing so Back can restore the initial screen.
     if (!previous) window.history.replaceState({ ...window.history.state, salahNavigation: { depth: 0, values: { [key]: current } } }, "");
     const base = entry()!;
-    const values = resetChildren ? { [key]: next } : { ...base.values, [key]: next };
+    const values = resetChildren === true ? { [key]: next } : { ...base.values, [key]: next };
+    if (Array.isArray(resetChildren)) {
+      for (const childKey of resetChildren) delete values[childKey];
+    }
     window.history[replace ? "replaceState" : "pushState"]({
       ...window.history.state,
       salahNavigation: { depth: base.depth + (replace ? 0 : 1), values },
