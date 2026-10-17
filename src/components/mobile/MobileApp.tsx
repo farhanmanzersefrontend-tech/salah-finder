@@ -30,6 +30,7 @@ import {
 } from "phosphor-react";
 import { CALCULATION_METHODS, usePrayerStore } from "../../store/usePrayerStore";
 import type { CalculationSettings, PrayerTimings } from "../../store/usePrayerStore";
+import { bannerPhase } from "../../utils/bannerTime";
 import { PRAYER_ORDER } from "../../utils/prayerNames";
 import { getNextPrayer } from "../../utils/azanScheduler";
 import { adjustPrayerTimes, prayerWallDate, timeMinutes, validateCalculation } from "../../utils/prayerPreferences";
@@ -313,7 +314,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
         {screen === "home" && (
           <>
             <section className="home-hero">
-              <MosqueScene night={night || theme === 1} />
+              <MosqueScene phase={bannerPhase(prayerNow, store.timings)} azan={Boolean(playingPrayer)} />
               <div className="home-topline">
                 <span className="wordmark">
                   <img src="/favicon.svg" alt="" width="30" height="30" />

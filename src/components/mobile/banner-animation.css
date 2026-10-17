@@ -1,0 +1,29 @@
+.animated-scene { --sky-top:#f5c8bd; --sky-mid:#afd8c7; --sky-bottom:#609a8e; }
+.animated-scene .scene-sky-top { stop-color:var(--sky-top); }
+.animated-scene .scene-sky-middle { stop-color:var(--sky-mid); }
+.animated-scene .scene-sky-bottom { stop-color:var(--sky-bottom); }
+.animated-scene stop { transition:stop-color 8s ease; }
+.scene-dawn { --sky-top:#a686d2; --sky-mid:#f3bfad; --sky-bottom:#9cba9a; }
+.scene-day { --sky-top:#8acde5; --sky-mid:#d3ece1; --sky-bottom:#83b69d; }
+.scene-afternoon { --sky-top:#f5c8bd; --sky-mid:#afd8c7; --sky-bottom:#609a8e; }
+.scene-sunset { --sky-top:#a46aaf; --sky-mid:#ffb383; --sky-bottom:#a3a38c; }
+.scene-night { --sky-top:#172f4c; --sky-mid:#32586b; --sky-bottom:#527e78; }
+.animated-scene .scene-sun { transform-origin:321px 106px; animation:banner-sun 9s ease-in-out infinite alternate; transition:opacity 8s; }
+.scene-dawn .scene-sun,.scene-sunset .scene-sun { transform:translateY(32px); }
+.scene-night .scene-sun { opacity:0; }
+.scene-moon,.scene-stars { opacity:0; transition:opacity 8s; }
+.scene-night .scene-moon,.scene-night .scene-stars { opacity:1; }
+.scene-moon { animation:banner-moon 10s ease-in-out infinite alternate; }
+.scene-night .scene-stars circle { animation:banner-twinkle 4s ease-in-out infinite alternate; }
+.scene-clouds { animation:banner-clouds 35s ease-in-out infinite alternate; }
+.scene-night .scene-clouds { opacity:.06; }
+.scene-azan .scene-azan-glow { animation:banner-azan 4s ease-in-out infinite; }
+@keyframes banner-sun { from { opacity:.8; } to { opacity:1; } }
+@keyframes banner-moon { to { transform:translateY(-4px); } }
+@keyframes banner-twinkle { to { opacity:.3; } }
+@keyframes banner-clouds { from { transform:translateX(-16px); } to { transform:translateX(24px); } }
+@keyframes banner-azan { 0%,100% { opacity:0; } 50% { opacity:.18; } }
+@media (prefers-reduced-motion:reduce) {
+  .animated-scene *, .animated-scene .scene-stars circle { animation:none; transition:none; }
+  .scene-azan .scene-azan-glow { opacity:.12; }
+}
