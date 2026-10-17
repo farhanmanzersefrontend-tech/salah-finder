@@ -67,7 +67,7 @@ function PrintedMushafPage({ page }: { page: number }) {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
   return <div className="mushaf-artwork" aria-busy={status === 'loading'}>
-    <svg className="mushaf-page-image" viewBox={page <= 2 ? '40 0 944 840' : '40 0 944 1656'} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Printed Madani Quran, page ${page}`} style={{ opacity: status === 'loaded' ? 1 : 0 }}>
+    <svg className="mushaf-page-image" viewBox={page <= 2 ? '0 0 1024 840' : '0 0 1024 1656'} preserveAspectRatio="xMidYMid meet" role="img" aria-label={`Printed Madani Quran, page ${page}`} style={{ opacity: status === 'loaded' ? 1 : 0 }}>
       <title>{`Printed Madani Quran, page ${page}`}</title>
       <image key={attempt} href={printedMushafImageUrl(page)} width={1024} height={1656} onLoad={() => setStatus('loaded')} onError={() => setStatus('error')} />
     </svg>
