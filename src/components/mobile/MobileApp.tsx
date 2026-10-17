@@ -50,6 +50,7 @@ import { dailyHadithNumbers, hadithDay } from "../../utils/dailyHadith";
 import MobileDuas from "./MobileDuas";
 import MobileSettings from "./MobileSettings";
 import ProfileOther from "./ProfileOther";
+import GoogleProfileCard from "./GoogleProfileCard";
 import ProfileGuides from "./ProfileGuides";
 import type { GuideScreen } from "./ProfileGuides";
 import IslamicCalendar from "./IslamicCalendar";
@@ -784,14 +785,7 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                 </span>
               </button>
             </div>
-            <section className="profile-card">
-              <div className="profile-avatar">
-                <Moon size={32} weight="duotone" />
-              </div>
-              <h2>Assalamu alaikum</h2>
-              <p>A little closer, every day.</p>
-              <span className="small-pill">{streak} day prayer streak</span>
-            </section>
+            <GoogleProfileCard streak={streak} />
             <h2 className="section-label">Make it yours</h2>
             <div className="settings-list">
               {[

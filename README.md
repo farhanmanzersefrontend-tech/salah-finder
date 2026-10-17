@@ -34,6 +34,22 @@ References: [Vercel Node.js functions](https://vercel.com/docs/functions/runtime
 
 Use the sun/moon switch beside **Your space** in Profile. The preference is saved on this device and applies across the app, independently of the selected scenery theme.
 
+## Google sign-in on Profile
+
+The **Continue with Google** button uses Firebase Authentication for both new and returning users. A signed-in profile shows the Google display name, photo, email, and a Sign out button. Firebase restores the login on subsequent visits. Prayer tracking and reading progress remain stored locally on the device; this change does not add account-based cloud sync.
+
+To enable login:
+
+1. Create a project at [Firebase Console](https://console.firebase.google.com/), then register a **Web app** using the `</>` icon in Project settings.
+2. Open **Authentication**, get started, and enable **Google** under **Sign-in method**. Select your support email and save. No email/password provider is needed.
+3. Copy `.env.example` to `.env.local` and fill in the four `VITE_FIREBASE_*` fields from the web app's Firebase configuration: `apiKey`, `authDomain`, `projectId`, and `appId`. These are public web configuration values. Do not use a service-account key or Google client secret.
+4. In **Authentication > Settings > Authorized domains**, add `localhost` for local testing and the domain where the app is hosted. Use HTTPS for production.
+5. Restart Vite after editing `.env.local`. For Vercel, add the same four values as project environment variables and rebuild/redeploy.
+
+Without the Firebase configuration, the Profile button is visible but login cannot complete. A real Google account flow must be tested after configuration; mocked checks cannot verify the consent screen, authorized domain, or account permissions.
+
+Reference: [Firebase Google sign-in guide](https://firebase.google.com/docs/auth/web/google-signin).
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
