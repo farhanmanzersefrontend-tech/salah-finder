@@ -450,6 +450,9 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                       {next?.prayer === prayer && <small>Next prayer</small>}
                     </span>
                     <time>{store.timings[prayer] || "— — : — —"}</time>
+                    <span className="prayer-streak-indicator">
+                      {done.includes(prayer) && <Fire size={18} weight="fill" role="img" aria-label={`${prayer} completed for today's streak`} />}
+                    </span>
                     <button
                       className="prayer-sound"
                       aria-label={`${store.azan.perPrayer[prayer] ? "Mute" : "Unmute"} ${prayer} azan`}

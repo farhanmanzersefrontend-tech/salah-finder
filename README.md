@@ -26,7 +26,7 @@ Before deploying:
 
 The total is persistent in Redis, and an atomic Lua operation prevents duplicate increments for the same visit ID, including concurrent requests and retries. Deduplication IDs expire after 24 hours; the total does not expire. The displayed total is fetched when the app opens. If the API is unavailable or unconfigured, the footer says "Visitor count unavailable" instead of showing a fabricated number.
 
-`npm run dev` previews the frontend only. Use `vercel dev` with development environment variables to exercise the function locally. Run `node scripts/check-visitors.mjs` for mocked API and browser-session checks; live Redis/Vercel verification still requires the database connection.
+`npm run dev` also serves `/api/visitors` through a development middleware that runs the same handler used in production. Add `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` to `.env.local` to use real storage locally; they remain server-only. Restart Vite after changing them. `vercel dev` is also supported. Run `node scripts/check-visitors.mjs` for mocked API and browser-session checks and `node scripts/check-visitor-dev.mjs` for the local route integration check. Live Redis/Vercel verification still requires the database connection. The UI retries an unavailable counter every 30 seconds and when the browser reconnects.
 
 References: [Vercel Node.js functions](https://vercel.com/docs/functions/runtimes/node-js), [Upstash REST API](https://upstash.com/docs/redis/features/restapi).
 

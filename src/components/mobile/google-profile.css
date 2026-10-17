@@ -1,6 +1,22 @@
 .google-profile-card .profile-avatar{overflow:hidden}
 .google-profile-card .profile-avatar img{display:block;width:100%;height:100%;object-fit:cover}
-.google-profile-name{display:block;font-size:16px;line-height:1.6;margin-top:6px;overflow-wrap:anywhere;color:var(--deep)}
+.google-profile-card{position:relative;padding:28px 20px 20px;border-radius:28px;background:radial-gradient(ellipse at top left,#ffffffaa,transparent 65%),linear-gradient(145deg,#ffffff80,color-mix(in srgb,var(--mint) 65%,#fff9ef));box-shadow:0 8px 28px #315d5708}
+.google-profile-card .profile-avatar{width:84px;height:84px;margin-bottom:16px;border:4px solid #ffffffce;box-shadow:0 0 0 1px #ffffff90,0 6px 20px #315d5710}
+.google-profile-card .google-profile-name{font-size:23px;font-weight:600;letter-spacing:-.6px;line-height:1.35;margin:0;color:var(--deep);overflow-wrap:anywhere}
+.google-profile-card .google-profile-greeting{font-size:11px;font-weight:500;letter-spacing:.4px;color:var(--muted);margin:0 0 6px}
+.google-profile-initials{font-size:25px;font-weight:500;letter-spacing:1px}
+.google-profile-email{display:flex;align-items:center;justify-content:center;gap:7px;max-width:100%;margin-top:10px;color:var(--muted);font-size:11px;line-height:1.8}
+.google-profile-email svg{flex-shrink:0}
+.google-profile-email span{min-width:0;overflow-wrap:anywhere}
+.google-profile-streak{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:10px 20px 10px 10px;margin-top:20px;border:1px solid #ffffffb3;border-radius:20px;background:#ffffff70;text-align:left;color:var(--deep)}
+.google-profile-streak-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:#f8e6cf;color:#b27d44}
+.google-profile-streak strong{display:block;font-size:17px;font-weight:600;line-height:1.3;font-variant-numeric:tabular-nums}
+.google-profile-streak small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.google-profile-account-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:16px;margin-top:22px;border-top:1px solid color-mix(in srgb,var(--teal) 15%,transparent)}
+.google-profile-account-footer>span{display:flex;align-items:center;gap:6px;text-align:left;font-size:10px;color:var(--muted)}
+.google-profile-account-footer>span svg{width:15px;height:15px;flex-shrink:0}
+.google-profile-account-footer .google-sign-out{flex-shrink:0;margin:0;padding:6px 10px;min-height:40px;border:0;border-radius:14px;background:transparent;font-size:11px!important}
+.google-profile-account-footer .google-sign-out:hover{background:var(--mint)}
 .google-profile-card>p{overflow-wrap:anywhere}
 .google-sign-in{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:300px;min-height:46px;margin:22px auto 0;padding:11px 18px;border:1px solid #d9dfda;border-radius:24px;background:#fff;color:#25352e!important;font-size:13px!important;font-weight:500;box-shadow:0 2px 6px #315d5708}
 .google-sign-in svg{flex-shrink:0}
@@ -13,3 +29,8 @@
 .google-profile-error button{margin-top:6px;border:0;background:transparent;color:inherit;text-decoration:underline;min-height:32px;font-size:11px}
 .night-mode .google-sign-out{background:var(--mint)}
 .night-mode .google-profile-error{background:#473a2e;color:#ead4b6}
+.night-mode .google-profile-card{background:radial-gradient(ellipse at top left,#ffffff08,transparent 65%),var(--night-surface);border-color:var(--line)}
+.night-mode .google-profile-card .profile-avatar{border-color:var(--night-raised);box-shadow:0 0 0 1px var(--line)}
+.night-mode .google-profile-streak{background:var(--mint);border-color:var(--line)}
+.night-mode .google-profile-streak-icon{background:#514332;color:#edc592}
+@media(max-width:360px){.google-profile-card{padding-inline:16px}.google-profile-card .google-profile-name{font-size:21px}.google-profile-account-footer{gap:8px}.google-profile-account-footer>span{font-size:9px}}

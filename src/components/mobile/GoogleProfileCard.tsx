@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { User } from "firebase/auth";
-import { Moon, SignOut } from "phosphor-react";
+import { EnvelopeSimple, Fire, Moon, SignOut } from "phosphor-react";
 import {
   getGoogleAuth,
   handleGoogleSignIn,
@@ -86,7 +86,7 @@ export default function GoogleProfileCard({ streak }: { streak: number }) {
   }
   return (
     <section
-      className="profile-card google-profile-card"
+      className={`profile-card google-profile-card ${user ? 'is-signed-in' : ''}`}
       aria-busy={busy || initializing}
     >
       <div className="profile-avatar">
@@ -98,18 +98,17 @@ export default function GoogleProfileCard({ streak }: { streak: number }) {
             onError={() => setPhotoFailed(true)}
           />
         ) : (
-          <Moon size={32} weight="duotone" />
+          user?.displayName ? <span className="google-profile-initials">{user.displayName.trim().split(/\s+/).slice(0, 2).map(name => name[0]).join('')}</span> : <Moon size={32} weight="duotone" />
         )}
       </div>
-      <h2>
-        Assalamu alaikum
-        {user?.displayName ? (
-          <span className="google-profile-name">{user.displayName}</span>
-        ) : null}
-      </h2>
-      <p>{user?.email || "A little closer, every day."}</p>
-      <span className="small-pill">{streak} day prayer streak</span>
+      {user ? <>
+        <p className="google-profile-greeting">Assalamu alaikum</p>
+        <h2 className="google-profile-name">{user.displayName || 'Welcome back'}</h2>
+        {user.email && <div className="google-profile-email"><EnvelopeSimple size={15} aria-hidden="true"/><span>{user.email}</span></div>}
+      </> : <><h2>Assalamu alaikum</h2><p>A little closer, every day.</p></>}
+      <div className="google-profile-streak"><span className="google-profile-streak-icon"><Fire size={22} weight="duotone" aria-hidden="true"/></span><span><strong>{streak} {streak === 1 ? 'day' : 'days'}</strong><small>Prayer streak</small></span></div>
       {user ? (
+        <div className="google-profile-account-footer"><span><GoogleLogo/>Connected with Google</span>
         <button
           className="google-sign-out"
           type="button"
@@ -119,6 +118,7 @@ export default function GoogleProfileCard({ streak }: { streak: number }) {
           <SignOut size={17} />
           {busy ? "Signing out…" : "Sign out"}
         </button>
+        </div>
       ) : (
         <>
           <button
