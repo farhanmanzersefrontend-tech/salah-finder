@@ -63,6 +63,7 @@ import "./mobile.css";
 import "./desktop.css";
 import "./night.css";
 import useVisitorCount from "../../hooks/useVisitorCount";
+import useGoogleUser from "../../hooks/useGoogleUser";
 import { useNavigationState } from "../../hooks/useNavigationState";
 
 type Screen =
@@ -109,6 +110,7 @@ function ClockFace({ now }: { now: Date }) {
 }
 
 export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer: string | null; onMuteAzan: () => void }) {
+  const googleUser = useGoogleUser();
   const [screen, setScreen, backScreen] = useNavigationState<Screen>("screen", "home", true);
   const [now, setNow] = useState(new Date());
   const [hadithJournal, setHadithJournal] = useSaved<Record<string, string[]>>("salah-hadith-daily-journal", {});
@@ -359,6 +361,19 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                   </button>
                 </div>
               </div>
+              {googleUser && (
+                <button className="home-user-greeting" type="button" onClick={() => go("profile")} aria-label="Open your profile">
+                  <span className="home-user-avatar" aria-hidden="true">
+                    {googleUser.displayName?.trim().charAt(0).toUpperCase() || <UserCircle size={24} />}
+                    {googleUser.photoURL && <img key={googleUser.photoURL} src={googleUser.photoURL} alt="" referrerPolicy="no-referrer" onError={event => { event.currentTarget.style.display = "none"; }} />}
+                  </span>
+                  <span className="home-user-copy">
+                    <span>Assalamu alaikum</span>
+                    <strong>{googleUser.displayName?.trim() || "Welcome back"}</strong>
+                  </span>
+                  <CaretRight size={17} aria-hidden="true" />
+                </button>
+              )}
               <section className={`next-prayer-card${hasTimes ? "" : " awaiting-location"}`}>
                 <div className="next-prayer-copy">
                   <button
