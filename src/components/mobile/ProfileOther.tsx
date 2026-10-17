@@ -26,7 +26,7 @@ export default function ProfileOther() {
   // Use the public app address from the site's metadata, including in local previews.
   const appUrl = typeof document !== "undefined"
     ? document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.content || window.location.origin
-    : "https://salahfinder.app/";
+    : "https://awqat-alsalah.vercel.app/";
   const title = panel === "instagram" ? "Instagram" : otherItems.find(item => item.id === panel)?.title || "";
 
   async function shareApp() {
