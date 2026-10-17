@@ -464,14 +464,20 @@ export default function MobileApp({ playingPrayer, onMuteAzan }: { playingPrayer
                       className={`prayer-check ${done.includes(prayer) ? "checked" : ""}`}
                       aria-label={`Mark ${prayer} ${done.includes(prayer) ? "incomplete" : "complete"}`}
                       aria-pressed={done.includes(prayer)}
-                      onClick={() =>
-                        setJournal((previous) => ({
-                          ...previous,
-                          [today]: done.includes(prayer)
-                            ? done.filter((p) => p !== prayer)
-                            : [...done, prayer],
-                        }))
-                      }
+                      disabled={!next || (dayKey(next.at) === prayerToday && index > PRAYER_ORDER.indexOf(next.prayer))}
+                      title={!next ? 'Set prayer times to track prayers' : dayKey(next.at) === prayerToday && index > PRAYER_ORDER.indexOf(next.prayer) ? 'Later prayers cannot be selected yet' : 'Track this prayer'}
+                      onClick={() => {
+                        // Recheck at click time in case the prayer boundary has just passed.
+                        const currentTime = prayerWallDate(new Date(), store.timezone);
+                        const currentNext = hasTimes ? getNextPrayer(store.timings, currentTime) : null;
+                        if (!currentNext || (dayKey(currentNext.at) === dayKey(currentTime) && index > PRAYER_ORDER.indexOf(currentNext.prayer))) return;
+                        setJournal(previous => {
+                          const completed = previous[today] || [];
+                          return { ...previous, [today]: completed.includes(prayer)
+                            ? completed.filter(item => item !== prayer)
+                            : [...completed, prayer] };
+                        });
+                      }}
                     >
                       <Check size={13} />
                     </button>
