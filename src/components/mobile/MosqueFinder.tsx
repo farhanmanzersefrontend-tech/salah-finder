@@ -11,6 +11,7 @@ import './mosque-finder.css';
 import MosqueRoutePlanner from './MosqueRoutePlanner';
 import type { MosqueRoute } from '../../utils/mosqueRoute';
 import GoogleMosqueMap from './GoogleMosqueMap';
+import DraggableMapSheet from './DraggableMapSheet';
 import { googleNearbyMosques } from '../../utils/googleMosques';
 
 const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
@@ -169,8 +170,8 @@ export default function MosqueFinder({ onBack, onChooseLocation }: { onBack: () 
       {routeOpen && active && <div className="finder-destination"><MapPin size={17} weight="fill" /><span>{active.name}</span></div>}
     </div>
     <div className="finder-map-tools"><button onClick={() => { setShowNearby(true); setQuery(''); setRetry(value => value + 1); }} disabled={lat === null || loading} aria-label="Search mosques within 1 km" title="Find nearby mosques"><MagnifyingGlass size={22} /></button><button onClick={locate} disabled={locating} aria-label="Find my GPS location" title="Use current GPS location"><Crosshair size={23} /></button>{lat !== null && lon !== null && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`mosques near ${lat},${lon}`)}`} target="_blank" rel="noreferrer" aria-label="Open nearby mosques in Google Maps" title="Open Google Maps"><MapPin size={22} weight="duotone" /></a>}</div>
-    {routeOpen && active && lat !== null && lon !== null ? <MosqueRoutePlanner key={active.id} origin={{ lat, lon }} originLabel={gps ? 'Your location' : location || 'Search location'} destination={active} mosques={mosques} onClose={() => { setRouteOpen(false); setRoute(null); }} onRoute={setRoute} /> : <section className="finder-sheet">
-      <span className="finder-handle" />
+    {routeOpen && active && lat !== null && lon !== null ? <MosqueRoutePlanner key={active.id} origin={{ lat, lon }} originLabel={gps ? 'Your location' : location || 'Search location'} destination={active} mosques={mosques} onClose={() => { setRouteOpen(false); setRoute(null); }} onRoute={setRoute} /> : <DraggableMapSheet className="finder-sheet" title={active?.name || 'Nearby mosques'}>
+
       <div className="finder-sheet-heading"><h2>{active ? active.name : 'Find your nearest masjid'}</h2><button className="icon-button" onClick={() => setShowNearby(value => !value)} aria-label={showNearby ? 'Show fewer nearby mosques' : 'Show all nearby mosques'}><CaretDown size={20} /></button></div>
       <div role="status" aria-live="polite">{locating && <p className="finder-notice">Step 1: Finding your current GPS location…</p>}{loading && <p className="finder-notice">Finding and marking mosques within 1 km of your location…</p>}{(error || gpsError) && <p className="finder-error">{gpsError || error}</p>}{tileError && !usingGoogle && <p className="finder-notice">Map tiles could not load. You can still use the list or Google Maps.</p>}{!loading && !error && lat !== null && !active && <p className="finder-notice">{query ? 'No nearby mosques match your search.' : 'No mapped mosques found within 1 km. Listings may be incomplete.'}</p>}</div>
       {active && <><p className="finder-detail"><MapPin size={17} weight="fill" />{active.address || 'Address not listed · View location on map'}</p><p className="finder-detail"><NavigationArrow size={17} />{Math.round(active.distance)} m <span>· Straight-line distance</span></p><p className="finder-detail"><Clock size={17} />{active.hours || 'Opening hours not listed'}</p><div className="finder-actions"><button className="finder-directions" onClick={() => setRouteOpen(true)}><NavigationArrow size={17} weight="fill" />Direction</button><a href={directions} target="_blank" rel="noreferrer"><NavigationArrow size={17} />Start</a><button aria-pressed={saved.includes(active.id)} onClick={() => setSaved(items => items.includes(active.id) ? items.filter(id => id !== active.id) : [...items, active.id])}><BookmarkSimple size={17} weight={saved.includes(active.id) ? 'fill' : 'regular'} />{saved.includes(active.id) ? 'Saved' : 'Save'}</button></div></>}
@@ -178,6 +179,6 @@ export default function MosqueFinder({ onBack, onChooseLocation }: { onBack: () 
       <div className="finder-results" role="list" aria-label="Mosques marked on the map">{(showNearby ? visible : visible.slice(0, 2)).map(mosque => <button className={`finder-result ${active?.id === mosque.id ? 'is-selected' : ''}`} key={mosque.id} aria-pressed={active?.id === mosque.id} onClick={() => { setSelected(mosque.id); setQuery(''); map.current?.panTo([mosque.lat, mosque.lon]); }}><span className="finder-result-icon"><MapPin size={19} weight="fill" /></span><span><strong>{mosque.name}</strong><small>{mosque.address || `${mosque.lat.toFixed(5)}, ${mosque.lon.toFixed(5)}`}</small></span><b>{Math.round(mosque.distance)} m</b></button>)}</div>
       {mapNotice && <p className="finder-notice" role="status">{mapNotice}</p>}
       <p className="finder-credit">{gps ? `GPS accuracy ±${Math.round(gps.accuracy)} m · ` : 'Selected search location · '}{usingGoogle ? 'Google Places · Up to 20 nearest results within 1 km' : 'Mosque data © OpenStreetMap contributors'}</p>
-    </section>}
+    </DraggableMapSheet>}
   </div>;
 }

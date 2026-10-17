@@ -3,6 +3,7 @@ import { Bicycle, Car, X, Plus, ShareNetwork, NavigationArrow, MapPin, Clock } f
 import { fetchMosqueRoute, routeLink, durationLabel } from '../../utils/mosqueRoute';
 import type { MosqueRoute, TravelMode } from '../../utils/mosqueRoute';
 import type { Mosque } from '../../utils/nearbyMosques';
+import DraggableMapSheet from './DraggableMapSheet';
 
 export default function MosqueRoutePlanner({ origin, originLabel, destination, mosques, onClose, onRoute }: {
   origin: { lat: number; lon: number }; originLabel: string; destination: Mosque; mosques: Mosque[];
@@ -49,8 +50,7 @@ export default function MosqueRoutePlanner({ origin, originLabel, destination, m
     } catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) setShareMessage('Could not share. Open directions and copy the link from Google Maps.'); }
   }
   let elapsed = 0;
-  return <section className={`route-planner ${expanded ? 'route-expanded' : ''}`} aria-label="Plan your mosque journey">
-    <span className="finder-handle" />
+  return <DraggableMapSheet className={`route-planner ${expanded ? 'route-expanded' : ''}`} title="Journey details">
     <div className="route-title"><h2>{mode === 'car' ? 'Car – Four Wheeler' : 'Bike – Bicycle'}</h2><button className="icon-button" onClick={onClose} aria-label="Close route planner"><X size={22} /></button></div>
     <div className="route-modes" role="group" aria-label="Travel mode"><button aria-pressed={mode === 'bike'} onClick={() => setMode('bike')}><Bicycle size={19} />Bike</button><button aria-pressed={mode === 'car'} onClick={() => setMode('car')}><Car size={19} />Car</button></div>
     <label className="route-duration">Prayer stop duration<select value={prayerMinutes} onChange={event => setPrayerMinutes(Number(event.target.value))}>{[5, 10, 15, 20, 30, 45, 60].map(minutes => <option key={minutes} value={minutes}>{minutes} minutes per mosque</option>)}</select></label>
@@ -67,5 +67,5 @@ export default function MosqueRoutePlanner({ origin, originLabel, destination, m
     <div className="route-actions"><a href={link} target="_blank" rel="noreferrer"><NavigationArrow size={18} weight="fill" />Start</a><button onClick={() => setAddingStops(value => !value)} aria-expanded={addingStops}><Plus size={18} />Add stops{validStops.length ? ` (${validStops.length})` : ''}</button><button onClick={share}><ShareNetwork size={18} />Share</button></div>
     {shareMessage && <p className="finder-notice" role="status">{shareMessage}</p>}
     <p className="route-disclaimer"><Clock size={12} />Estimated travel time; live traffic excluded. Start opens Google Maps.</p>
-  </section>;
+  </DraggableMapSheet>;
 }

@@ -22,3 +22,10 @@
 @media(min-width:768px){.finder-google-canvas{margin-left:390px;width:calc(100% - 390px);height:100%!important}}
 /* Show the mosque rows directly below the selected mosque details. */
 .finder-sheet{max-height:66%}.finder-results{max-height:210px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:4px}.finder-result{min-height:58px;padding:11px 9px;border-bottom:1px solid #8ba99a20;border-radius:12px}.finder-result strong{font-size:12px}.finder-result small{margin-top:3px;font-size:10px}.finder-result b{color:#2b8574;font-size:12px}.finder-result[aria-pressed=true]{box-shadow:inset 3px 0 #2b8574}.night-mode .finder-result b{color:#a1d5c4}.finder-nearby-bar button:first-child{font-size:11px;font-weight:500;padding-block:7px}
+/* Both details panels can be dragged down without hiding the map. */
+.map-bottom-sheet{display:flex;flex-direction:column;max-height:72%;padding-top:0;overflow:hidden;min-height:82px}
+.sheet-drag-handle{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:45px;padding:9px 0 6px;border:0;background:transparent;color:inherit;cursor:grab;touch-action:none;user-select:none}
+.sheet-drag-handle:active{cursor:grabbing}.sheet-drag-handle .finder-handle{margin:0 auto 5px;width:42px;height:5px}.sheet-handle-caption{font-size:9px;color:#6e9185;max-width:95%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sheet-scroll-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;flex:1}.sheet-collapsed{max-height:82px;padding-bottom:0}.sheet-collapsed .sheet-drag-handle{min-height:76px}.sheet-collapsed .sheet-handle-caption{font-size:12px;font-weight:500;color:inherit}.sheet-collapsed .sheet-scroll-content{visibility:hidden;overflow:hidden;flex:0;height:0}.sheet-dragging{user-select:none}.night-mode .sheet-handle-caption{color:#a0bdb1}
+@media(min-width:768px){.map-bottom-sheet{max-height:72%}.sheet-collapsed{max-height:82px}}
+.map-bottom-sheet.sheet-dragging{max-height:72%}.sheet-collapsed.sheet-dragging .sheet-scroll-content{visibility:visible;flex:1;height:auto}
