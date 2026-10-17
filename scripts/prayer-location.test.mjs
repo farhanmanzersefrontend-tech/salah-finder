@@ -54,3 +54,21 @@ test('leaving the page cancels GPS and releases its watch', async () => {
   await assert.rejects(promise, { name: 'AbortError' });
   assert.deepEqual(env.cleared, [7]);
 });
+
+test('location progress marks improving readings before the final fix', async () => {
+  const env = setup();
+  const progress = [];
+  const promise = env.exports.currentPrayerLocation({ method: 'gps', useInternet: false }, undefined, 1000, position => progress.push(position.coords.accuracy));
+  env.position(600); env.position(800); env.position(20);
+  const result = await promise;
+  assert.deepEqual(progress, [600, 20]);
+  assert.equal(result.accuracy, 20);
+});
+
+test('a usable best reading remains available when the device cannot refine further', async () => {
+  const env = setup();
+  const promise = env.exports.currentPrayerLocation({ method: 'gps', useInternet: false }, undefined, 1000);
+  env.position(250); env.expire();
+  const result = await promise;
+  assert.equal(result.accuracy, 250);
+});

@@ -1,4 +1,4 @@
-export type Mosque = { id: string; name: string; lat: number; lon: number; distance: number; address: string; hours?: string };
+export type Mosque = { id: string; name: string; lat: number; lon: number; distance: number; address: string; hours?: string; mapsUrl?: string };
 type Element = { type: string; id: number; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> };
 
 export function distanceMeters(lat: number, lon: number, otherLat: number, otherLon: number) {
@@ -23,9 +23,20 @@ export function parseMosques(elements: Element[], lat: number, lon: number): Mos
   return results.sort((a, b) => a.distance - b.distance);
 }
 
+export function mosqueSearchQuery(lat: number, lon: number) {
+  return `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:1000,${lat},${lon});nwr["building"="mosque"](around:1000,${lat},${lon});nwr["amenity"="place_of_worship"]["name"~"masjid|mosque|مسجد",i](around:1000,${lat},${lon}););out center tags;`;
+}
+
 export async function nearbyMosques(lat: number, lon: number, signal: AbortSignal) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) throw new Error('Choose a valid location first.');
-  const query = `[out:json][timeout:20];(nwr["amenity"="place_of_worship"]["religion"="muslim"](around:1000,${lat},${lon});nwr["building"="mosque"](around:1000,${lat},${lon}););out center tags;`;
+  try {
+    const response = await fetch('/api/mosques', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lat, lon }), signal: AbortSignal.any([signal, AbortSignal.timeout(15000)]) });
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data.elements)) return parseMosques(data.elements, lat, lon);
+    }
+  } catch { signal.throwIfAborted(); }
+  const query = mosqueSearchQuery(lat, lon);
   // A busy public server should not leave the radius map without results.
   for (const endpoint of ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter']) {
     signal.throwIfAborted();

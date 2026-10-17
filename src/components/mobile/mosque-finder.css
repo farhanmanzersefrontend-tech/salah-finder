@@ -13,3 +13,12 @@
 .finder-google-focus button{display:flex;align-items:center;gap:5px;border:0;border-radius:18px;padding:8px 10px;background:transparent;color:#275e54;font-size:10px}
 .finder-google-focus button[aria-pressed=true]{background:#075650;color:#fff}
 @media(min-width:768px){.finder-google-focus{left:auto;right:20px;top:22px}}
+.finder-map-tools a{width:45px;height:45px;display:grid;place-items:center;border:1px solid #90b9ad;border-radius:50%;background:#2d8277;color:#fff;box-shadow:0 4px 14px #16443c1a;text-decoration:none}
+.google-user-marker{position:relative;width:22px;height:22px;background:#2478ed;border:4px solid white;border-radius:50%;box-shadow:0 0 0 8px #2478ed25,0 3px 8px #163f3925}
+.google-user-marker>span{position:absolute;top:28px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;border-radius:12px;color:#18579f;padding:5px 9px;font-size:11px;box-shadow:0 2px 8px #163f3920}
+.google-mosque-marker{display:flex;flex-direction:column;align-items:center;background:#075650;border:2px solid #fff;border-radius:10px;color:#fff;padding:7px 9px;max-width:160px;box-shadow:0 3px 10px #153e3933;cursor:pointer}
+.google-mosque-marker strong{font-size:11px;color:#f3da65;max-width:140px;white-space:normal;text-align:center}.google-mosque-marker small{font-size:9px}.google-mosque-marker>span{font-size:20px;line-height:1.2;color:#f3da65}
+/* Keep native Google map controls and attribution clear of the bottom sheet. */
+@media(min-width:768px){.finder-google-canvas{margin-left:390px;width:calc(100% - 390px);height:100%!important}}
+/* Show the mosque rows directly below the selected mosque details. */
+.finder-sheet{max-height:66%}.finder-results{max-height:210px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-bottom:4px}.finder-result{min-height:58px;padding:11px 9px;border-bottom:1px solid #8ba99a20;border-radius:12px}.finder-result strong{font-size:12px}.finder-result small{margin-top:3px;font-size:10px}.finder-result b{color:#2b8574;font-size:12px}.finder-result[aria-pressed=true]{box-shadow:inset 3px 0 #2b8574}.night-mode .finder-result b{color:#a1d5c4}.finder-nearby-bar button:first-child{font-size:11px;font-weight:500;padding-block:7px}

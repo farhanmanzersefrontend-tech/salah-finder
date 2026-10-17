@@ -6,7 +6,7 @@ function locationFailure(error: Pick<GeolocationPositionError, 'code'>) {
   return new Error('Your phone could not determine its location. Turn on Location/GPS and try again, or search for your city.');
 }
 
-export function requestPrayerPosition(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000) {
+export function requestPrayerPosition(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000, onProgress?: (position: GeolocationPosition) => void) {
   return new Promise<GeolocationPosition>((resolve, reject) => {
     let best: GeolocationPosition | undefined;
     let watchId: number | undefined;
@@ -36,7 +36,10 @@ export function requestPrayerPosition(preferences: LocationPreferences, signal?:
       if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180 || !Number.isFinite(accuracy) || accuracy < 0) {
         finish(new Error('Your device returned an invalid location. Please try again.')); return;
       }
-      if (!best || accuracy < best.coords.accuracy) best = position;
+      if (!best || accuracy < best.coords.accuracy) {
+        best = position;
+        onProgress?.(position);
+      }
       if (preferences.method !== 'gps' || accuracy <= Math.min(100, maxAccuracyMeters)) finish();
     };
     const onError = (error: GeolocationPositionError) => {
@@ -53,10 +56,10 @@ export function requestPrayerPosition(preferences: LocationPreferences, signal?:
   });
 }
 
-export async function currentPrayerLocation(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000) {
+export async function currentPrayerLocation(preferences: LocationPreferences, signal?: AbortSignal, maxAccuracyMeters = 1000, onProgress?: (position: GeolocationPosition) => void) {
   if (window.isSecureContext === false) throw new Error('Location needs a secure connection. Open this app using HTTPS, or search for your city.');
   if (!navigator.geolocation) throw new Error("Location is unavailable. Search for a city or enter coordinates instead.");
-  const position = await requestPrayerPosition(preferences, signal, maxAccuracyMeters);
+  const position = await requestPrayerPosition(preferences, signal, maxAccuracyMeters, onProgress);
   const { latitude: lat, longitude: lon } = position.coords;
   let label = "Current location";
   if (preferences.useInternet) {
