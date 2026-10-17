@@ -8,7 +8,7 @@ type Props = { prayers: ActivityJournal; quran: ActivityJournal; hadith: Activit
 export default function StreakGoals({ prayers, quran, hadith, onHadith, now, onQuran, onPrayers, onStreaks, expanded = false }: Props) {
   const [kind, setKind] = useState<'quran' | 'prayer' | 'hadith'>('quran');
   const goals = [
-    { id: 'quran' as const, name: 'Quran', goal: 10, unit: 'ayahs', journal: quran, action: onQuran, label: 'Read Quran', icon: BookOpen },
+    { id: 'quran' as const, name: 'Quran', goal: 5, unit: 'ayahs', journal: quran, action: onQuran, label: 'Read Quran', icon: BookOpen },
     { id: 'prayer' as const, name: 'Namaz', goal: 5, unit: 'prayers', journal: prayers, action: onPrayers, label: 'Track prayers', icon: HandsClapping },
     { id: 'hadith' as const, name: 'Hadith', goal: 2, unit: 'Hadiths', journal: hadith, action: onHadith, label: 'Read Hadith', icon: BookBookmark },
   ];
@@ -18,7 +18,7 @@ export default function StreakGoals({ prayers, quran, hadith, onHadith, now, onQ
       const count = activityCount(item.journal, now);
       const streak = activityStreak(item.journal, item.goal, now);
       return <section className="daily-goal-card" key={item.id} aria-label={`${item.name} daily goal`}>
-        <div className="daily-goal-heading"><span><Target size={22}/></span><div><h2>{expanded ? `${item.name} goal` : "Today's Goal"}</h2><p>{item.id === 'quran' ? 'Read 10 ayahs' : item.id === 'hadith' ? 'Read 2 daily Hadiths' : 'Complete all 5 prayers'}</p></div></div>
+        <div className="daily-goal-heading"><span><Target size={22}/></span><div><h2>{expanded ? `${item.name} goal` : "Today's Goal"}</h2><p>{item.id === 'quran' ? 'Read 5 ayahs' : item.id === 'hadith' ? 'Read 2 daily Hadiths' : 'Complete all 5 prayers'}</p></div></div>
         <div className="goal-progress" role="progressbar" aria-label={`${item.name} progress`} aria-valuemin={0} aria-valuemax={item.goal} aria-valuenow={Math.min(count, item.goal)}><i style={{ width: `${Math.min(count / item.goal, 1) * 100}%` }}/></div>
         <div className="goal-totals"><div><small>Completed today</small><strong>{count}/{item.goal} {item.unit}</strong></div><div><small>Current streak</small><strong><Fire size={16} weight="fill"/>{streak} {streak === 1 ? 'day' : 'days'}</strong></div></div>
         <button className="goal-action" onClick={item.action}><item.icon size={18}/>{item.label}</button>
@@ -29,6 +29,6 @@ export default function StreakGoals({ prayers, quran, hadith, onHadith, now, onQ
         })}</div></>}
       </section>;
     })}
-    {expanded && <p className="streak-explanation">Complete 10 distinct ayahs, both daily Hadiths, or all five prayers in a day to grow the corresponding streak. Tap “Mark read” on each ayah in the Quran reader or on each daily Hadith. A missed day resets the current streak; your best streak stays saved. Activity is saved on this device using your local day.</p>}
+    {expanded && <p className="streak-explanation">Complete 5 distinct ayahs, both daily Hadiths, or all five prayers in a day to grow the corresponding streak. Tap “Mark read” on each ayah in the Quran reader or on each daily Hadith. A missed day resets the current streak; your best streak stays saved. Activity is saved on this device using your local day.</p>}
   </div>;
 }

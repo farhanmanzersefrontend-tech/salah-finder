@@ -7,7 +7,7 @@ type Props = { quran: ActivityJournal; hadith: ActivityJournal; prayers: Activit
 
 export default function StatisticsStreaks({ quran, hadith, prayers, now, onOpen }: Props) {
   const activities = [
-    { name: 'Quran', icon: BookOpen, journal: quran, goal: 10, unit: 'ayahs' },
+    { name: 'Quran', icon: BookOpen, journal: quran, goal: 5, unit: 'ayahs' },
     { name: 'Hadith', icon: BookBookmark, journal: hadith, goal: 2, unit: 'Hadiths' },
     { name: 'Namaz', icon: HandsClapping, journal: prayers, goal: 5, unit: 'prayers' },
   ];

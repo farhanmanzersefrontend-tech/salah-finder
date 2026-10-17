@@ -3,6 +3,7 @@ import { ArrowUp, Check, Compass, Crosshair, MapPin, NavigationArrow } from 'pho
 import useLocation from '../hooks/useLocation';
 import useQiblaDirection from '../hooks/useQiblaDirection';
 import useCompass from '../hooks/useCompass';
+import { compassTurn } from '../hooks/useCompass';
 import { usePrayerStore } from '../store/usePrayerStore';
 import './qibla.css';
 
@@ -52,16 +53,21 @@ export default function QiblaPage() {
   const nearKaaba = local.distanceKm !== null && local.distanceKm < 0.01;
   const bearing = nearKaaba ? null : verified && verified.lat === lat && verified.lon === lon ? verified.bearing : local.bearing;
   const liveHeading = mode === 'live' ? deviceHeading : null;
-  const relative = bearing !== null && liveHeading !== null ? ((bearing - liveHeading + 540) % 360) - 180 : null;
+  const relative = bearing !== null && liveHeading !== null ? compassTurn(liveHeading, bearing) : null;
   const aligned = relative !== null && Math.abs(relative) <= 5;
-  const rotation = mode === 'north' ? bearing ?? 0 : relative ?? 0;
+  const rotation = mode === 'north' ? bearing ?? 0 : bearing !== null && liveHeading !== null ? bearing - liveHeading : 0;
+  const enableCompass = () => {
+    setMode('live');
+    void start();
+    if (!coords) requestLocation();
+  };
   const status = nearKaaba ? 'You are near the Kaaba' : !coords ? 'Find your Qibla' : aligned ? 'You’re facing Makkah' : relative !== null ? `Turn ${relative > 0 ? 'right' : 'left'} ${Math.round(Math.abs(relative))}°` : mode === 'north' ? 'Direction from north' : 'Enable your compass';
 
   return <section className={`qibla-experience${aligned ? ' is-aligned' : ''}`} aria-label="Qibla finder">
     <div className="qibla-pattern" aria-hidden="true" />
     <p className="qibla-eyebrow">A direction. A connection.</p>
     <div className="qibla-mode" aria-label="Compass view">
-      <button type="button" aria-pressed={mode === 'live'} onClick={() => setMode('live')}><Compass size={17} /> Live compass</button>
+      <button type="button" aria-pressed={mode === 'live'} onClick={enableCompass}><Compass size={17} /> Live compass</button>
       <button type="button" aria-pressed={mode === 'north'} onClick={() => { setMode('north'); stop(); }}><NavigationArrow size={17} /> North-up view</button>
     </div>
     <div className={`qibla-dial${bearing === null || (mode === 'live' && relative === null) ? ' awaiting-heading' : ''}`} role="img" aria-label={bearing === null ? 'Set your location for a Qibla bearing' : `Qibla ${bearing.toFixed(1)} degrees clockwise from north${relative !== null ? `, turn ${Math.abs(relative).toFixed(0)} degrees ${relative >= 0 ? 'right' : 'left'}` : ''}`}>
@@ -72,6 +78,8 @@ export default function QiblaPage() {
       {bearing !== null && (mode === 'north' || relative !== null) && <div className="qibla-needle" style={{ transform: `rotate(${rotation}deg)` }} aria-hidden="true"><NavigationArrow size={29} weight="fill" /></div>}
       <div className="qibla-center"><Kaaba /><span>MAKKAH</span></div>
     </div>
+    {mode === 'live' && liveHeading === null && <button type="button" className="qibla-enable-compass" onClick={enableCompass}><Compass size={19}/>{enabled ? 'Calibrate compass' : 'Start live compass'}</button>}
+    {mode === 'live' && liveHeading !== null && <p className="qibla-live-heading"><span aria-hidden="true"/>{(((liveHeading % 360) + 360) % 360).toFixed(0)}° heading · Live compass</p>}
     <div className="qibla-status" role="status" aria-live="polite">
       <h2>{aligned && <Check size={20} aria-hidden="true" />}{status}</h2>
       <p>{aligned ? 'Approximate alignment · keep your phone flat' : relative !== null ? 'Turn slowly until the arrow points straight ahead.' : mode === 'north' ? 'Align N with north using a trusted compass.' : 'Hold your phone flat, with the top pointing ahead.'}</p>
@@ -82,7 +90,7 @@ export default function QiblaPage() {
     </div>
     <div className="qibla-actions">
       <button type="button" className="primary-button" disabled={detecting} onClick={requestLocation}><Crosshair size={18} />{detecting ? 'Finding your location…' : 'Use my current location'}</button>
-      {mode === 'live' && <button type="button" className="outline-button" onClick={() => void start()}><Compass size={18} />{enabled ? 'Recalibrate compass' : 'Enable live compass'}</button>}
+      {mode === 'live' && <button type="button" className="outline-button" onClick={enableCompass}><Compass size={18} />{enabled ? 'Recalibrate compass' : 'Enable live compass'}</button>}
     </div>
     {coords && <p className="qibla-location"><MapPin size={13} />{coords.lat.toFixed(4)}, {coords.lon.toFixed(4)}{accuracy !== null ? ` · GPS accuracy ±${Math.round(accuracy)} m` : ' · Selected location'}</p>}
     {(locationError || compassError) && <p className="inline-error" role="alert">{locationError || compassError}</p>}

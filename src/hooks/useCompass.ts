@@ -3,9 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 type CompassEvent = DeviceOrientationEvent & { webkitCompassHeading?: number; webkitCompassAccuracy?: number };
 type OrientationPermission = typeof DeviceOrientationEvent & { requestPermission?: (absolute?: boolean) => Promise<string> };
 const normalize = (angle: number) => ((angle % 360) + 360) % 360;
+export const compassTurn = (from: number, to: number) => normalize(to - from + 180) - 180;
+export const smoothCompassHeading = (previous: number | null, next: number) => previous === null ? next : previous + compassTurn(previous, next) * 0.35;
 
 export function compassHeading(event: CompassEvent, screenAngle = 0): number | null {
-  if (event.beta == null || event.gamma == null || Math.abs(event.beta) > 35 || Math.abs(event.gamma) > 35) return null;
+  if (event.beta == null || event.gamma == null || !Number.isFinite(event.beta) || !Number.isFinite(event.gamma) || Math.abs(event.beta) > 35 || Math.abs(event.gamma) > 35) return null;
   if (typeof event.webkitCompassHeading === 'number' && Number.isFinite(event.webkitCompassHeading)) {
     if (typeof event.webkitCompassAccuracy === 'number' && (event.webkitCompassAccuracy < 0 || event.webkitCompassAccuracy > 20)) return null;
     return normalize(event.webkitCompassHeading + screenAngle);
@@ -36,7 +38,7 @@ export default function useCompass() {
         const result = await orientation.requestPermission(true);
         if (version !== generation.current) return;
         if (result !== 'granted') { setError('Motion permission was denied. Allow it in your browser settings and try again.'); return; }
-      } catch { setError('Could not enable the compass. Check motion permissions and try again.'); return; }
+      } catch { if (version === generation.current) setError('Could not enable the compass. Check motion permissions and try again.'); return; }
     }
     if (version !== generation.current) return;
     setEnabled(true);
@@ -49,7 +51,7 @@ export default function useCompass() {
         setDeviceHeading(null); setError('Hold your phone flat and move it in a figure eight to calibrate.'); return;
       }
       lastReading = Date.now(); received = true;
-      setDeviceHeading(heading); setError(null);
+      setDeviceHeading(previous => smoothCompassHeading(previous, heading)); setError(null);
     };
     window.addEventListener('deviceorientationabsolute', onEvent as EventListener);
     window.addEventListener('deviceorientation', onEvent);
@@ -65,6 +67,10 @@ export default function useCompass() {
       window.clearInterval(timer);
     };
   }, [stop]);
+  useEffect(() => {
+    const orientation = window.DeviceOrientationEvent as OrientationPermission | undefined;
+    if (window.isSecureContext && orientation && !orientation.requestPermission) void start();
+  }, [start]);
   useEffect(() => () => { generation.current++; removeListeners.current?.(); }, []);
   return { deviceHeading, error, enabled, start, stop } as const;
 }
